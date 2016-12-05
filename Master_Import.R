@@ -51,7 +51,8 @@ Monthly_Brand_Category <- SOT_Master %>%
             "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
             "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
             "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
-            "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5]))) %>% 
+            "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
+            "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
   select(ShipCancelMonth, 
          ReportingBrand, 
          Category, 
@@ -62,7 +63,8 @@ Monthly_Brand_Category <- SOT_Master %>%
          WTSOTLateUnits, 
          PPAUnits,
          PPASOTLateUnits,
-         PPASOT5daysLateUnits)
+         PPASOT5daysLateUnits,
+         WTPPASOTLateUnits)
 View(Monthly_Brand_Category)
 
 
