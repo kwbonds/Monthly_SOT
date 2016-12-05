@@ -14,21 +14,22 @@ choose_file_directory <- function()
 
 SOT_OTS_directory <- choose_file_directory()
 
-################
-# Create RODBC connection 
+
+# Create RODBC connection---- 
 my_connect <- odbcConnect(dsn= "IP EDWP", uid= my_uid, pwd= my_pwd)
 # sqlTables(my_connect, catalog = "EDWP", tableName  = "tables")
 sqlQuery(my_connect, query = "SELECT  * from dbc.dbcinfo;")
-#################
 
-#################
-# Create RJDBC connection - In Dev
+
+
+
+# Create RJDBC connection - In Dev----
 #Sys.setenv(JAVA_HOME= "C:\\Users\\Ke2l8b1\\Documents\\Teradata\\JDBC_Driver\\jre-8u101-windows-x64.exe")
 # drv2 <- JDBC("com.teradata.jdbc.TeraConnectionPoolDataSource", "C:\\Users\\Ke2l8b1\\Documents\\Teradata\\JDBC_Driver\\terajdbc4.jar;C:\\Users\\Ke2l8b1\\Documents\\Teradata\\JDBC_Driver\\tdgssconfig.jar")
 # conn <- dbConnect(drv2, "jdbc:teradata://tdprodcop1.gap.com", my_uid, my_pwd)
 # SOT_Master_RJDBC <- dbGetQuery(conn, 
 #                       query = "SELECT  * from dbc.dbcinfo;")
-#################
+
 
 SOT_Master <- sqlQuery(my_connect, 
                        query = "SELECT  * from SRAA_SAND.VIEW_SOT_MASTER;")
@@ -40,6 +41,7 @@ OTS_Master <- sqlQuery(my_connect,
 # load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\OTS_Master_object.rtf")
 
 source("SOT_OTS_Custom_Functions.R")
+
 
 # Monthly SOT Brand and Category Table ----
 Monthly_Brand_Category_SOT <- SOT_Master %>%
@@ -67,7 +69,8 @@ Monthly_Brand_Category_SOT <- SOT_Master %>%
          PPASOT5daysLateUnits,
          WTPPASOTLateUnits)
 View(Monthly_Brand_Category_SOT)
-#----
+
+
 # Monthly SOT Brand Table ----
 Monthly_Brand_SOT <- SOT_Master %>%
   filter(SOT_Master$ShipCancelWeek <= 43) %>%
@@ -93,33 +96,6 @@ Monthly_Brand_SOT <- SOT_Master %>%
          PPASOT5daysLateUnits,
          WTPPASOTLateUnits)
 View(Monthly_Brand_SOT)
-#----
-# Monthly SOT Brand and Category Table ----
-Monthly_Category_SOT <- SOT_Master %>%
-  filter(SOT_Master$ShipCancelWeek <= 43) %>%
-  group_by(ShipCancelMonth, Category) %>% 
-  summarise("SOTUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
-            "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
-            "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
-            "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
-            "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
-            "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
-            "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
-            "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
-            "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
-  select(ShipCancelMonth, 
-         Category, 
-         SOTUnits, 
-         SOTOnTimeUnits, 
-         SOTLateUnits, 
-         SOTLate5daysUnits, 
-         WTSOTLateUnits, 
-         PPAUnits,
-         PPASOTLateUnits,
-         PPASOT5daysLateUnits,
-         WTPPASOTLateUnits)
-View(Monthly_Category_SOT) 
-#----
 
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
