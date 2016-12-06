@@ -42,12 +42,40 @@ save(OTS_Master, file = "OTS_Master_object.rtf")
 # load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\OTS_Master_object.rtf")
 
 source("SOT_OTS_Custom_Functions.R")
+# setup environment ----
+prompt_for_week <- function()
+{ 
+  n <- readline(prompt="Enter Week number: ")
+  return(as.integer(n))
+}
 
-OTS_Master %>%  subset(Parent_Vendor == "Liberty Distrubution")
+choose_file_directory <- function()
+{
+  v <- jchoose.dir()
+  return(v)
+}
+
+SOT_OTS_directory <- choose_file_directory()
+
+EOW <- prompt_for_week()
+# Remove noise from OTS and SOT Master ----
+# grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
+OTS_Master <- OTS_Master %>% 
+  filter(OTS_Master$Week <= EOW,
+         !is.na(OTS_Master$DC_NAME),
+         !grepl("Liberty Distribution Company", Parent_Vendor, ignore.case = TRUE),
+         !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
+         !grepl("JPF", DC_NAME, ignore.case = TRUE)) 
+
+SOT_Master <- SOT_Master %>% 
+  filter(SOT_Master$ShipCancelWeek <= EOW,
+         !grepl("Liberty Distribution Company", Parent_Vendor, ignore.case = TRUE),
+         !grepl("dummy", Parent_Vendor, ignore.case = TRUE)) 
+
 
 # Create Monthly SOT Brand and Category Table ----
 Monthly_Brand_Category_SOT <- SOT_Master %>%
-  filter(SOT_Master$ShipCancelWeek <= 43) %>%
+  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
   group_by(ShipCancelMonth, ReportingBrand, Category) %>% 
   summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -70,11 +98,11 @@ Monthly_Brand_Category_SOT <- SOT_Master %>%
          PPASOTLateUnits,
          PPASOT5daysLateUnits,
          WTPPASOTLateUnits)
- View(Monthly_Brand_Category_SOT)
+ # View(Monthly_Brand_Category_SOT)
 
 # Create Monthly SOT Brand Table ----
 Monthly_Brand_SOT <- SOT_Master %>%
-  filter(SOT_Master$ShipCancelWeek <= 43) %>%
+  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
   group_by(ShipCancelMonth, ReportingBrand) %>% 
   summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -100,7 +128,7 @@ Monthly_Brand_SOT <- SOT_Master %>%
 
 # Create Monthly SOT Category Table ----
 Monthly_Category_SOT <- SOT_Master %>%
-  filter(SOT_Master$ShipCancelWeek <= 43) %>%
+  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
   group_by(ShipCancelMonth, Category) %>% 
   summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -126,7 +154,7 @@ Monthly_Category_SOT <- SOT_Master %>%
 
 # Create Monthly Gap Inc SOT Table ----
 Monthly_GapInc_SOT <- SOT_Master %>%
-  filter(SOT_Master$ShipCancelWeek <= 43) %>%
+  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
   group_by(ShipCancelMonth) %>% 
   summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -151,7 +179,7 @@ Monthly_GapInc_SOT <- SOT_Master %>%
 
 # Create Monthly OTS Brand and Category Table ----
 Monthly_Brand_Category_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= 43) %>%
+  filter(OTS_Master$Week <= EOW) %>%
   group_by(Month_Number, ReportingBrand, Category) %>% 
   summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -168,11 +196,11 @@ Monthly_Brand_Category_OTS <- OTS_Master %>%
          OTSLate5daysUnits, 
          WTOTSLateUnits, 
          PPAOTSLateUnits)
-# View(Monthly_Brand_Category_OTS)
+ # View(Monthly_Brand_Category_OTS)
 
 # Create Monthly OTS Brand Table ----
 Monthly_Brand_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= 43) %>%
+  filter(OTS_Master$Week <= EOW) %>%
   group_by(Month_Number, ReportingBrand) %>% 
   summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -192,7 +220,7 @@ View(Monthly_Brand_OTS)
 
 # Create Monthly OTS Category Table ----
 Monthly_Category_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= 43) %>%
+  filter(OTS_Master$Week <= EOW) %>%
   group_by(Month_Number, Category) %>% 
   summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -212,7 +240,7 @@ View(Monthly_Category_OTS)
 
 # Create Monthly Gap Inc OTS Table ----
 Monthly_GapInc_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= 43) %>%
+  filter(OTS_Master$Week <= EOW) %>%
   group_by(Month_Number) %>% 
   summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -229,6 +257,24 @@ Monthly_GapInc_OTS <- OTS_Master %>%
          PPAOTSLateUnits)
 # View(Monthly_GapInc_OTS)
 
+# Create Monthly SOT Brand and Category Combine Table ----
+Monthly_Brand_Category_Combine <- left_join(Monthly_Brand_Category_SOT, Monthly_Brand_Category_OTS, by= c("ShipCancelMonth"="Month_Number", "ReportingBrand"="ReportingBrand", "Category"="Category"))
+Monthly_Brand_Category_Combine <- Monthly_Brand_Category_Combine[c(1:8, 13:17,9:10,18,11:12)]
+
+# Create Monthly SOT Brand Combine Table ----
+Monthly_Brand_Combine <- left_join(Monthly_Brand_SOT, Monthly_Brand_OTS, by= c("ShipCancelMonth"="Month_Number", "ReportingBrand"="ReportingBrand"))
+Monthly_Brand_Combine <- Monthly_Brand_Combine[c(1:7, 12:16, 8:9, 17, 10:11)]
+View(Monthly_Brand_Combine)
+
+# Create Monthly SOT Category Combine Table ----
+Monthly_Category_Combine <- left_join(Monthly_Category_SOT, Monthly_Category_OTS, by= c("ShipCancelMonth"="Month_Number", "Category"="Category"))
+Monthly_Category_Combine <- Monthly_Category_Combine[c(1:7, 12:16, 8:9, 17, 10:11)]
+View(Monthly_Category_Combine)
+
+# Create Monthly SOT Gap Inc Combine Table ----
+Monthly_GapInc_Combine <- left_join(Monthly_GapInc_SOT, Monthly_GapInc_OTS, by= c("ShipCancelMonth"="Month_Number"))
+Monthly_GapInc_Combine <- Monthly_GapInc_Combine[c(1:6, 11:15,7:8,16,9:10)]
+View(Monthly_GapInc_Combine)
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
   # filter(OTS_Master$Week <= 35) %>%
