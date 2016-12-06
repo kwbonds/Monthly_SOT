@@ -49,7 +49,7 @@ OTS_Master %>%  subset(Parent_Vendor == "Liberty Distrubution")
 Monthly_Brand_Category_SOT <- SOT_Master %>%
   filter(SOT_Master$ShipCancelWeek <= 43) %>%
   group_by(ShipCancelMonth, ReportingBrand, Category) %>% 
-  summarise("SOTUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
@@ -70,13 +70,13 @@ Monthly_Brand_Category_SOT <- SOT_Master %>%
          PPASOTLateUnits,
          PPASOT5daysLateUnits,
          WTPPASOTLateUnits)
-View(Monthly_Brand_Category_SOT)
+ View(Monthly_Brand_Category_SOT)
 
 # Create Monthly SOT Brand Table ----
 Monthly_Brand_SOT <- SOT_Master %>%
   filter(SOT_Master$ShipCancelWeek <= 43) %>%
   group_by(ShipCancelMonth, ReportingBrand) %>% 
-  summarise("SOTUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
@@ -96,13 +96,13 @@ Monthly_Brand_SOT <- SOT_Master %>%
          PPASOTLateUnits,
          PPASOT5daysLateUnits,
          WTPPASOTLateUnits)
-View(Monthly_Brand_SOT)
+# View(Monthly_Brand_SOT)
 
 # Create Monthly SOT Category Table ----
 Monthly_Category_SOT <- SOT_Master %>%
   filter(SOT_Master$ShipCancelWeek <= 43) %>%
   group_by(ShipCancelMonth, Category) %>% 
-  summarise("SOTUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
@@ -122,13 +122,13 @@ Monthly_Category_SOT <- SOT_Master %>%
          PPASOTLateUnits,
          PPASOT5daysLateUnits,
          WTPPASOTLateUnits)
-View(Monthly_Category_SOT) 
+# View(Monthly_Category_SOT) 
 
 # Create Monthly Gap Inc SOT Table ----
 Monthly_GapInc_SOT <- SOT_Master %>%
   filter(SOT_Master$ShipCancelWeek <= 43) %>%
   group_by(ShipCancelMonth) %>% 
-  summarise("SOTUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
@@ -147,13 +147,13 @@ Monthly_GapInc_SOT <- SOT_Master %>%
          PPASOTLateUnits,
          PPASOT5daysLateUnits,
          WTPPASOTLateUnits)
-View(Monthly_GapInc_SOT) 
+# View(Monthly_GapInc_SOT) 
 
 # Create Monthly OTS Brand and Category Table ----
 Monthly_Brand_Category_OTS <- OTS_Master %>%
   filter(OTS_Master$Week <= 43) %>%
   group_by(Month_Number, ReportingBrand, Category) %>% 
-  summarise("OTSUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
@@ -168,13 +168,13 @@ Monthly_Brand_Category_OTS <- OTS_Master %>%
          OTSLate5daysUnits, 
          WTOTSLateUnits, 
          PPAOTSLateUnits)
-View(Monthly_Brand_Category_OTS)
+# View(Monthly_Brand_Category_OTS)
 
 # Create Monthly OTS Brand Table ----
 Monthly_Brand_OTS <- OTS_Master %>%
   filter(OTS_Master$Week <= 43) %>%
   group_by(Month_Number, ReportingBrand) %>% 
-  summarise("OTSUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
@@ -194,7 +194,7 @@ View(Monthly_Brand_OTS)
 Monthly_Category_OTS <- OTS_Master %>%
   filter(OTS_Master$Week <= 43) %>%
   group_by(Month_Number, Category) %>% 
-  summarise("OTSUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
@@ -214,7 +214,7 @@ View(Monthly_Category_OTS)
 Monthly_GapInc_OTS <- OTS_Master %>%
   filter(OTS_Master$Week <= 43) %>%
   group_by(Month_Number) %>% 
-  summarise("OTSUnits" = floor(sum(Units[Lateness== "OnTime" | Lateness== "Late"])),
+  summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
@@ -227,7 +227,7 @@ Monthly_GapInc_OTS <- OTS_Master %>%
          OTSLate5daysUnits, 
          WTOTSLateUnits, 
          PPAOTSLateUnits)
-View(Monthly_GapInc_OTS)
+# View(Monthly_GapInc_OTS)
 
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
