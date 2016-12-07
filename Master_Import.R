@@ -34,6 +34,8 @@ SOT_Master <- sqlQuery(my_connect,
 
 OTS_Master <- sqlQuery(my_connect, 
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
+
+Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
 # save Master Objects ----
 save(SOT_Master, file = "SOT_Master_object.rtf")
 save(OTS_Master, file = "OTS_Master_object.rtf")
@@ -264,17 +266,28 @@ Monthly_Brand_Category_Combine <- Monthly_Brand_Category_Combine[c(1:8, 13:17,9:
 # Create Monthly SOT Brand Combine Table ----
 Monthly_Brand_Combine <- left_join(Monthly_Brand_SOT, Monthly_Brand_OTS, by= c("ShipCancelMonth"="Month_Number", "ReportingBrand"="ReportingBrand"))
 Monthly_Brand_Combine <- Monthly_Brand_Combine[c(1:7, 12:16, 8:9, 17, 10:11)]
-View(Monthly_Brand_Combine)
+# View(Monthly_Brand_Combine)
 
 # Create Monthly SOT Category Combine Table ----
 Monthly_Category_Combine <- left_join(Monthly_Category_SOT, Monthly_Category_OTS, by= c("ShipCancelMonth"="Month_Number", "Category"="Category"))
 Monthly_Category_Combine <- Monthly_Category_Combine[c(1:7, 12:16, 8:9, 17, 10:11)]
-View(Monthly_Category_Combine)
+# View(Monthly_Category_Combine)
 
 # Create Monthly SOT Gap Inc Combine Table ----
 Monthly_GapInc_Combine <- left_join(Monthly_GapInc_SOT, Monthly_GapInc_OTS, by= c("ShipCancelMonth"="Month_Number"))
 Monthly_GapInc_Combine <- Monthly_GapInc_Combine[c(1:6, 11:15,7:8,16,9:10)]
-View(Monthly_GapInc_Combine)
+# View(Monthly_GapInc_Combine)
+write
+# Write tables ----
+# YTD Masters
+# write_csv(SOT_Master, path = paste(SOT_OTS_directory,  paste('SOT_Master_WK', EOW, '_YTD.csv',sep = ""), sep = '/' ))
+# write_csv(OTS_Master, path = paste(SOT_OTS_directory,  paste('OTS_Master_WK', EOW, '_YTD.csv',sep = ""), sep = '/' ))
+# Monthly Combine tables
+write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Monthly_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Monthly_GapInc_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_GapInc_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
   # filter(OTS_Master$Week <= 35) %>%
