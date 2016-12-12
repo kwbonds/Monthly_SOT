@@ -34,14 +34,14 @@ SOT_Master <- sqlQuery(my_connect,
 
 OTS_Master <- sqlQuery(my_connect, 
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
-
+# Import Preferred_Vendor file ----
 Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
 # save Master Objects ----
 save(SOT_Master, file = "SOT_Master_object.rtf")
 save(OTS_Master, file = "OTS_Master_object.rtf")
 
 # load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\SOT_Master_object.rtf")
-# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\OTS_Master_object.rtf")
+ load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\OTS_Master_object.rtf")
 
 source("SOT_OTS_Custom_Functions.R")
 # setup environment ----
@@ -61,17 +61,16 @@ SOT_OTS_directory <- choose_file_directory()
 
 EOW <- prompt_for_week()
 # Remove noise from OTS and SOT Master ----
-# grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
+ grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
 OTS_Master <- OTS_Master %>% 
   filter(OTS_Master$Week <= EOW,
-         !is.na(OTS_Master$DC_NAME),
-         !grepl("Liberty Distribution Company", Parent_Vendor, ignore.case = TRUE),
+         !grepl("Liberty Distribution", Parent_Vendor, ignore.case = TRUE),
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
          !grepl("JPF", DC_NAME, ignore.case = TRUE)) 
 
 SOT_Master <- SOT_Master %>% 
   filter(SOT_Master$ShipCancelWeek <= EOW,
-         !grepl("Liberty Distribution Company", Parent_Vendor, ignore.case = TRUE),
+         !grepl("Liberty Distribution", Parent_Vendor, ignore.case = TRUE),
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE)) 
 
 
@@ -244,7 +243,7 @@ View(Monthly_Category_OTS)
 Monthly_GapInc_OTS <- OTS_Master %>%
   filter(OTS_Master$Week <= EOW) %>%
   group_by(Month_Number) %>% 
-  summarise("OTSUnits" = floor(sum(Units)),
+  summarise("OTSUnits" = sum(Units),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
             "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
             "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
@@ -257,7 +256,7 @@ Monthly_GapInc_OTS <- OTS_Master %>%
          OTSLate5daysUnits, 
          WTOTSLateUnits, 
          PPAOTSLateUnits)
-# View(Monthly_GapInc_OTS)
+ # View(Monthly_GapInc_OTS)
 
 # Create Monthly SOT Brand and Category Combine Table ----
 Monthly_Brand_Category_Combine <- left_join(Monthly_Brand_Category_SOT, Monthly_Brand_Category_OTS, by= c("ShipCancelMonth"="Month_Number", "ReportingBrand"="ReportingBrand", "Category"="Category"))
@@ -277,7 +276,6 @@ Monthly_Category_Combine <- Monthly_Category_Combine[c(1:7, 12:16, 8:9, 17, 10:1
 Monthly_GapInc_Combine <- left_join(Monthly_GapInc_SOT, Monthly_GapInc_OTS, by= c("ShipCancelMonth"="Month_Number"))
 Monthly_GapInc_Combine <- Monthly_GapInc_Combine[c(1:6, 11:15,7:8,16,9:10)]
 # View(Monthly_GapInc_Combine)
-write
 # Write tables ----
 # YTD Masters
 # write_csv(SOT_Master, path = paste(SOT_OTS_directory,  paste('SOT_Master_WK', EOW, '_YTD.csv',sep = ""), sep = '/' ))
