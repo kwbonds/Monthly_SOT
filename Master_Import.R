@@ -34,8 +34,9 @@ SOT_Master <- sqlQuery(my_connect,
 
 OTS_Master <- sqlQuery(my_connect, 
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
-# Import Preferred_Vendor file ----
+# Import static files ----
 Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
+Country_description <- read_delim(file= "Country Description.txt", delim = "^")
 # save Master Objects ----
 save(SOT_Master, file = "SOT_Master_object.rtf")
 save(OTS_Master, file = "OTS_Master_object.rtf")
