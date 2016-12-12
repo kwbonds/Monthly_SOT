@@ -325,19 +325,38 @@ Monthly_Category_Combine <- Monthly_Category_Combine[c(1:7, 12:16, 8:9, 17, 10:1
 Monthly_GapInc_Combine <- left_join(Monthly_GapInc_SOT, Monthly_GapInc_OTS, by= c("ShipCancelMonth"="Month_Number"))
 Monthly_GapInc_Combine <- Monthly_GapInc_Combine[c(1:6, 11:15,7:8,16,9:10)]
 # View(Monthly_GapInc_Combine)
-# Create Preferred Vendor Combine Table
+# Create Preferred Vendor Combine Table ----
 Preferred_Vendor_New_Combine <- left_join(Monthly_Preferred_Vendor_new, Monthly_Preferred_Vendor_New_OTS, by = c("Category"="Category", "Parent_Vendor"="Parent_Vendor", "ShipCancelMonth" = "Month_Number"))
 Preferred_Vendor_New_Combine <-Preferred_Vendor_New_Combine[c(1:8, 13:17, 9:10, 18, 11:12)]
 
+# Create Monthly - byDC
+Monthly_by_DC <- OTS_Master %>% 
+  filter(OTS_Master$Week <= EOW) %>%
+  group_by(Fiscal_Month, Month_Number, DCCampus, DC_NAME, DestCtryCD) %>% 
+  summarise("Total Units" = floor(sum(Units)),
+            "OnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+            "OTS%" = sum(Units[Lateness=="OnTime"])/sum(Units),
+            "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])),
+            "WTOTSLateUnits" = floor(sum(Units[Lateness=="Late"]*Days_Late[Lateness=="Late" & Days_Late >=1])),
+            "LateUnits"= floor(sum(Units[Lateness=="Late"]))) %>% 
+  select(Fiscal_Month, 
+         Month_Number, 
+         `OnTimeUnits`, 
+         `Total Units`, 
+         DCCampus, 
+         DC_NAME, 
+         DestCtryCD, 
+         `OTS%`, 
+         `OTSLate5daysUnits`,
+         `WTOTSLateUnits`, 
+         `LateUnits`)
 # Write tables ----
-# YTD Masters
-# write_csv(SOT_Master, path = paste(SOT_OTS_directory,  paste('SOT_Master_WK', EOW, '_YTD.csv',sep = ""), sep = '/' ))
-# write_csv(OTS_Master, path = paste(SOT_OTS_directory,  paste('OTS_Master_WK', EOW, '_YTD.csv',sep = ""), sep = '/' ))
-# Monthly Combine tables
 write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_GapInc_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_GapInc_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Preferred_Vendor_New_Combine, path = paste(SOT_OTS_directory,  paste('Preferred_Vendor_New_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Monthly_by_DC, path = paste(SOT_OTS_directory,  paste('Monthly_by_DC_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
