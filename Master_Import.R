@@ -258,7 +258,56 @@ Monthly_GapInc_OTS <- OTS_Master %>%
          PPAOTSLateUnits)
  # View(Monthly_GapInc_OTS)
 
-# Create Monthly SOT Brand and Category Combine Table ----
+# Create Monthly - Preferred Vendor - New ----
+Monthly_Preferred_Vendor_new <- inner_join(SOT_Master, Preferred_Vendor_new, by = c("Category"= "New Category", "Parent_Vendor"="Vendor Name")) %>% 
+  filter(ShipCancelWeek <= EOW) %>%
+  group_by(Category, Parent_Vendor, ShipCancelMonth) %>% 
+  summarise("SOTUnits" = floor(sum(Units)),
+            "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+            "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
+            "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
+            "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
+            "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
+            "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
+            "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
+            "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
+  select(Category,
+         Parent_Vendor,
+         ShipCancelMonth,
+         SOTUnits, 
+         SOTOnTimeUnits, 
+         SOTLateUnits, 
+         SOTLate5daysUnits, 
+         WTSOTLateUnits, 
+         PPAUnits,
+         PPASOTLateUnits,
+         PPASOT5daysLateUnits,
+         WTPPASOTLateUnits) %>% 
+  arrange(ShipCancelMonth, Category)
+# Create Monthly Preferred Vendor - New OTS ----
+Monthly_Preferred_Vendor_New_OTS <- inner_join(OTS_Master, Preferred_Vendor_new, by = c("Category"= "New Category", "Parent_Vendor"="Vendor Name")) %>% 
+  filter(Week <= EOW) %>%
+  group_by(Category, Parent_Vendor,  Month_Number ) %>% 
+  summarise("OTSUnits" = floor(sum(Units)),
+            "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+            "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
+            "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
+            "WTOTSLateUnits" = floor(sum(Units[Lateness=="Late"]*Days_Late[Lateness=="Late" & Days_Late >=1])),
+            "PPAOTSLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]))) %>%  
+  select(Category, 
+         Parent_Vendor,
+         Month_Number,
+         OTSUnits, 
+         OTSOnTimeUnits, 
+         OTSLateUnits, 
+         OTSLate5daysUnits, 
+         WTOTSLateUnits, 
+         PPAOTSLateUnits) %>% 
+  arrange(Month_Number, Category)
+# View(Monthly_Preferred_Vendor_New_OTS)
+
+
+# Create Monthly Brand and Category Combine Table ----
 Monthly_Brand_Category_Combine <- left_join(Monthly_Brand_Category_SOT, Monthly_Brand_Category_OTS, by= c("ShipCancelMonth"="Month_Number", "ReportingBrand"="ReportingBrand", "Category"="Category"))
 Monthly_Brand_Category_Combine <- Monthly_Brand_Category_Combine[c(1:8, 13:17,9:10,18,11:12)]
 
@@ -276,6 +325,10 @@ Monthly_Category_Combine <- Monthly_Category_Combine[c(1:7, 12:16, 8:9, 17, 10:1
 Monthly_GapInc_Combine <- left_join(Monthly_GapInc_SOT, Monthly_GapInc_OTS, by= c("ShipCancelMonth"="Month_Number"))
 Monthly_GapInc_Combine <- Monthly_GapInc_Combine[c(1:6, 11:15,7:8,16,9:10)]
 # View(Monthly_GapInc_Combine)
+# Create Preferred Vendor Combine Table
+Preferred_Vendor_New_Combine <- left_join(Monthly_Preferred_Vendor_new, Monthly_Preferred_Vendor_New_OTS, by = c("Category"="Category", "Parent_Vendor"="Parent_Vendor", "ShipCancelMonth" = "Month_Number"))
+Preferred_Vendor_New_Combine <-Preferred_Vendor_New_Combine[c(1:8, 13:17, 9:10, 18, 11:12)]
+
 # Write tables ----
 # YTD Masters
 # write_csv(SOT_Master, path = paste(SOT_OTS_directory,  paste('SOT_Master_WK', EOW, '_YTD.csv',sep = ""), sep = '/' ))
