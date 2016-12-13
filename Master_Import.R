@@ -365,8 +365,53 @@ Monthly_by_DC <- OTS_Master %>%
          `WTOTSLateUnits`, 
          `LateUnits`)
 # Create Top 20 Countries SOT ----
+Monthly_Top_20_SOT <- left_join(SOT_Master, Top_20_Countries, by = c("CountryOfOrigin"= "CountryOfOrigin"))
+Monthly_Top_20_SOT <- SOT_Master %>%
+  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
+  group_by(ShipCancelMonth) %>% 
+  summarise("SOTUnits" = floor(sum(Units)),
+            "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+            "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
+            "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
+            "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
+            "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
+            "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
+            "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
+            "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
+  select(ShipCancelMonth, 
+         SOTUnits, 
+         SOTOnTimeUnits, 
+         SOTLateUnits, 
+         SOTLate5daysUnits, 
+         WTSOTLateUnits, 
+         PPAUnits,
+         PPASOTLateUnits,
+         PPASOT5daysLateUnits,
+         WTPPASOTLateUnits)
+# View(Monthly_Top_20_SOT) 
 
-  
+# Create Monthly Top 20 OTS Table ----
+Monthly_TOP_20_OTS <- left_join(OTS_Master, Top_20_Countries, by = c("ORIGIN_COUNTRY_CODE"="CountryOfOrigin"))
+Monthly_TOP_20_OTS <- OTS_Master %>%
+  filter(OTS_Master$Week <= EOW) %>%
+  group_by(Month_Number) %>% 
+  summarise("OTSUnits" = sum(Units),
+            "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+            "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
+            "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
+            "WTOTSLateUnits" = floor(sum(Units[Lateness=="Late"]*Days_Late[Lateness=="Late" & Days_Late >=1])),
+            "PPAOTSLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]))) %>%  
+  select(Month_Number, 
+         OTSUnits, 
+         OTSOnTimeUnits, 
+         OTSLateUnits, 
+         OTSLate5daysUnits, 
+         WTOTSLateUnits, 
+         PPAOTSLateUnits)
+  View(Monthly_TOP_20_OTS)
+# Create Monthly Top 20 Combine table ----
+Monthly_Top_20_Combine <- left_join(Monthly_Top_20_SOT, Monthly_TOP_20_OTS, by= c("ShipCancelMonth"="Month_Number"))
+Monthly_Top_20_Combine <- Monthly_Top_20_Combine[c(1:6, 11:15,7:8,16,9:10)]
   
 # Write tables ----
 write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
@@ -375,6 +420,7 @@ write_csv(Monthly_Category_Combine, path = paste(SOT_OTS_directory,  paste('Mont
 write_csv(Monthly_GapInc_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_GapInc_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Preferred_Vendor_New_Combine, path = paste(SOT_OTS_directory,  paste('Preferred_Vendor_New_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_by_DC, path = paste(SOT_OTS_directory,  paste('Monthly_by_DC_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Monthly_Top_20_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Top_20_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
