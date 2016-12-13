@@ -351,6 +351,14 @@ Monthly_by_DC <- OTS_Master %>%
          `OTSLate5daysUnits`,
          `WTOTSLateUnits`, 
          `LateUnits`)
+# Create Top 20 Countries table
+Top_20_Countries <- left_join(SOT_Master, Country_description, by= c("CountryOfOrigin"="CTRY_CD" ))
+Top_20_Countries <- Top_20_Countries %>% 
+  group_by(CountryOfOrigin,CTRY_DESC) %>% 
+  arrange(desc(Units)) %>% 
+  slice(1:20) %>% 
+  
+  
 # Write tables ----
 write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
