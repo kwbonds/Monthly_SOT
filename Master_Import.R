@@ -75,6 +75,19 @@ SOT_Master <- SOT_Master %>%
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE)) 
 
 
+# Create TOP 20 Countries Table ----
+Top_20_Countries <- left_join(SOT_Master, Country_description, by= c("CountryOfOrigin"="CTRY_CD" ))
+Top_20_Countries <- Top_20_Countries %>% 
+  group_by(CountryOfOrigin, CTRY_DESC) %>% 
+  summarise("Units" = floor(sum(Units))) %>% 
+  arrange(desc(Units)) %>% 
+  head(20) 
+# Create top 50 Vendors ----
+Top_50_Vendors <- SOT_Master %>% 
+  group_by(Parent_Vendor) %>% 
+  summarise("Units" = floor(sum(Units))) %>% 
+  arrange(desc(Units)) %>% 
+  head(50) 
 # Create Monthly SOT Brand and Category Table ----
 Monthly_Brand_Category_SOT <- SOT_Master %>%
   filter(SOT_Master$ShipCancelWeek <= EOW) %>%
@@ -351,12 +364,8 @@ Monthly_by_DC <- OTS_Master %>%
          `OTSLate5daysUnits`,
          `WTOTSLateUnits`, 
          `LateUnits`)
-# Create Top 20 Countries table
-Top_20_Countries <- left_join(SOT_Master, Country_description, by= c("CountryOfOrigin"="CTRY_CD" ))
-Top_20_Countries <- Top_20_Countries %>% 
-  group_by(CountryOfOrigin,CTRY_DESC) %>% 
-  arrange(desc(Units)) %>% 
-  slice(1:20) %>% 
+# Create Top 20 Countries SOT ----
+
   
   
 # Write tables ----
