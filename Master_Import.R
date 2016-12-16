@@ -34,15 +34,16 @@ SOT_Master <- sqlQuery(my_connect,
 
 OTS_Master <- sqlQuery(my_connect, 
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
+close(my_connect)
 # Import static files ----
 Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
 Country_description <- read_delim(file= "Country Description.txt", delim = "^")
 # save Master Objects ----
-save(SOT_Master, file = "SOT_Master_object.rtf")
-save(OTS_Master, file = "OTS_Master_object.rtf")
+# save(SOT_Master, file = "SOT_Master_object2.rtf")
+# save(OTS_Master, file = "OTS_Master_object2.rtf")
 
-# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\SOT_Master_object.rtf")
- load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\OTS_Master_object.rtf")
+# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\SOT_Master_object2.rtf")
+# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\OTS_Master_object2.rtf")
 
 source("SOT_OTS_Custom_Functions.R")
 # setup environment ----
@@ -62,15 +63,15 @@ SOT_OTS_directory <- choose_file_directory()
 
 EOW <- prompt_for_week()
 # Remove noise from OTS and SOT Master ----
- grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
+# grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
 OTS_Master <- OTS_Master %>% 
-  filter(OTS_Master$Week <= EOW,
+  filter(Week <= EOW,
          !grepl("Liberty Distribution", Parent_Vendor, ignore.case = TRUE),
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
          !grepl("JPF", DC_NAME, ignore.case = TRUE)) 
 
 SOT_Master <- SOT_Master %>% 
-  filter(SOT_Master$ShipCancelWeek <= EOW,
+  filter(ShipCancelWeek <= EOW,
          !grepl("Liberty Distribution", Parent_Vendor, ignore.case = TRUE),
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE)) 
 
@@ -79,14 +80,14 @@ SOT_Master <- SOT_Master %>%
 Top_20_Countries <- left_join(SOT_Master, Country_description, by= c("CountryOfOrigin"="CTRY_CD" ))
 Top_20_Countries <- Top_20_Countries %>% 
   group_by(CountryOfOrigin, CTRY_DESC) %>% 
-  summarise("Units" = floor(sum(Units))) %>% 
-  arrange(desc(Units)) %>% 
+  summarise("Units by Country" = floor(sum(Units))) %>% 
+  arrange(desc(`Units by Country`)) %>% 
   head(20) 
 # Create top 50 Vendors ----
 Top_50_Vendors <- SOT_Master %>% 
   group_by(Parent_Vendor) %>% 
-  summarise("Units" = floor(sum(Units))) %>% 
-  arrange(desc(Units)) %>% 
+  summarise("Units by Vendor" = floor(sum(Units))) %>% 
+  arrange(desc(`Units by Vendor`)) %>% 
   head(50) 
 # Create Monthly SOT Brand and Category Table ----
 Monthly_Brand_Category_SOT <- SOT_Master %>%
@@ -365,9 +366,9 @@ Monthly_by_DC <- OTS_Master %>%
          `WTOTSLateUnits`, 
          `LateUnits`)
 # Create Top 20 Countries SOT ----
-Monthly_Top_20_SOT <- left_join(SOT_Master, Top_20_Countries, by = c("CountryOfOrigin"= "CountryOfOrigin"))
-Monthly_Top_20_SOT <- SOT_Master %>%
-  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
+Monthly_Top_20_SOT <- inner_join(SOT_Master, Top_20_Countries, by = c("CountryOfOrigin"= "CountryOfOrigin"))
+Monthly_Top_20_SOT <- Monthly_Top_20_SOT %>%
+  filter(ShipCancelWeek <= EOW) %>%
   group_by(ShipCancelMonth) %>% 
   summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -391,8 +392,56 @@ Monthly_Top_20_SOT <- SOT_Master %>%
 # View(Monthly_Top_20_SOT) 
 
 # Create Monthly Top 20 OTS Table ----
-Monthly_TOP_20_OTS <- left_join(OTS_Master, Top_20_Countries, by = c("ORIGIN_COUNTRY_CODE"="CountryOfOrigin"))
-Monthly_TOP_20_OTS <- OTS_Master %>%
+Monthly_TOP_20_OTS <- inner_join(OTS_Master, Top_20_Countries, by = c("ORIGIN_COUNTRY_CODE"="CountryOfOrigin"))
+Monthly_TOP_20_OTS <- Monthly_TOP_20_OTS %>%
+  filter(Week <= EOW) %>%
+  group_by(Month_Number) %>% 
+  summarise("OTSUnits" = sum(Units),
+            "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+            "OTSLateUnits"= floor(sum(Units[Lateness=="Late"])),
+            "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])), 
+            "WTOTSLateUnits" = floor(sum(Units[Lateness=="Late"]*Days_Late[Lateness=="Late" & Days_Late >=1])),
+            "PPAOTSLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]))) %>%  
+  select(Month_Number, 
+         OTSUnits, 
+         OTSOnTimeUnits, 
+         OTSLateUnits, 
+         OTSLate5daysUnits, 
+         WTOTSLateUnits, 
+         PPAOTSLateUnits)
+#  View(Monthly_TOP_20_OTS)
+# Create Monthly Top 20 Combine table ----
+Monthly_Top_20_Combine <- inner_join(Monthly_Top_20_SOT, Monthly_TOP_20_OTS, by= c("ShipCancelMonth"="Month_Number"))
+Monthly_Top_20_Combine <- Monthly_Top_20_Combine[c(1:6, 11:15,7:8,16,9:10)]
+  
+# Create Monthly Top 50 Vendors SOT Table ----
+Monthly_Top_50_Vendors_SOT <- inner_join(SOT_Master, Top_50_Vendors, by = c("Parent_Vendor"= "Parent_Vendor"))
+Monthly_Top_50_Vendors_SOT <- Monthly_Top_50_Vendors_SOT %>%
+  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
+  group_by(ShipCancelMonth) %>% 
+  summarise("SOTUnits" = floor(sum(Units)),
+            "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+            "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
+            "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
+            "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
+            "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
+            "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
+            "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
+            "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
+  select(ShipCancelMonth, 
+         SOTUnits, 
+         SOTOnTimeUnits, 
+         SOTLateUnits, 
+         SOTLate5daysUnits, 
+         WTSOTLateUnits, 
+         PPAUnits,
+         PPASOTLateUnits,
+         PPASOT5daysLateUnits,
+         WTPPASOTLateUnits)
+ # View(Monthly_Top_50_Vendors_SOT) 
+# Create Monthly Top 50 Vendors OTS Table ----
+Monthly_Top_50_Vendors_OTS <- inner_join(OTS_Master, Top_50_Vendors, by = c("Parent_Vendor"= "Parent_Vendor"))
+Monthly_Top_50_Vendors_OTS <- Monthly_Top_50_Vendors_OTS %>%
   filter(OTS_Master$Week <= EOW) %>%
   group_by(Month_Number) %>% 
   summarise("OTSUnits" = sum(Units),
@@ -408,11 +457,9 @@ Monthly_TOP_20_OTS <- OTS_Master %>%
          OTSLate5daysUnits, 
          WTOTSLateUnits, 
          PPAOTSLateUnits)
-  View(Monthly_TOP_20_OTS)
-# Create Monthly Top 20 Combine table ----
-Monthly_Top_20_Combine <- left_join(Monthly_Top_20_SOT, Monthly_TOP_20_OTS, by= c("ShipCancelMonth"="Month_Number"))
-Monthly_Top_20_Combine <- Monthly_Top_20_Combine[c(1:6, 11:15,7:8,16,9:10)]
-  
+ # View(Monthly_GapInc_OTS)
+
+
 # Write tables ----
 write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
