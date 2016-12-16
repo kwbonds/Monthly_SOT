@@ -464,6 +464,24 @@ Monthly_Top_50_Vendors_OTS <- Monthly_Top_50_Vendors_OTS %>%
 Monthly_Top_50_Vendors_Combine <- left_join(Monthly_Top_50_Vendors_SOT, Monthly_Top_50_Vendors_OTS, by= c("ShipCancelMonth"="Month_Number"))
 Monthly_Top_50_Vendors_Combine <- Monthly_Top_50_Vendors_Combine[c(1:6, 11:15,7:8,16,9:10)]
 # View(Monthly_Top_50__Vendors_Combine)
+# Create OTSvsSOT table ----
+ OTS_vs <- OTS_Master %>% 
+   select(NUMBER_SEQ, Month_Number, Lateness, Units) %>%
+   filter(Lateness!= "Undetermined") %>% 
+   rename("StockedOnTime" = Lateness) %>%
+   group_by(Month_Number, StockedOnTime) %>% 
+   droplevels()
+ 
+ SOT_vs <- SOT_Master %>% 
+   select(NUMBER_SEQ, ShipCancelMonth, Lateness) %>%
+   filter(Lateness!="Unmeasured") %>% 
+   rename("ShippedOnTime" = Lateness) %>%
+   group_by(ShipCancelMonth, ShippedOnTime) %>% 
+   droplevels()
+ 
+ OTSvsSOT <- inner_join(OTS_vs, SOT_vs, by = c("NUMBER_SEQ"= "NUMBER_SEQ")) %>%
+   group_by(Month_Number, StockedOnTime, ShippedOnTime) %>% 
+   summarise("SumOfUnits" = floor(sum(Units)))
 # Write tables ----
 write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
@@ -473,6 +491,7 @@ write_csv(Preferred_Vendor_New_Combine, path = paste(SOT_OTS_directory,  paste('
 write_csv(Monthly_by_DC, path = paste(SOT_OTS_directory,  paste('Monthly_by_DC_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Top_20_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Top_20_Countries_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Top_50_Vendors_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Top_50_Vendors_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(OTSvsSOT, path = paste(SOT_OTS_directory,  paste('OTSvsSOT_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
