@@ -460,6 +460,10 @@ Monthly_Top_50_Vendors_OTS <- Monthly_Top_50_Vendors_OTS %>%
  # View(Monthly_GapInc_OTS)
 
 
+# Create Monthly SOT Top 50 Vendors Combine Table ----
+Monthly_Top_50__Vendors_Combine <- left_join(Monthly_Top_50_Vendors_SOT, Monthly_Top_50_Vendors_OTS, by= c("ShipCancelMonth"="Month_Number"))
+Monthly_Top_50__Vendors_Combine <- Monthly_Top_50__Vendors_Combine[c(1:6, 11:15,7:8,16,9:10)]
+# View(Monthly_Top_50__Vendors_Combine)
 # Write tables ----
 write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
