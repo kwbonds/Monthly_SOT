@@ -417,7 +417,7 @@ Monthly_Top_20_Combine <- Monthly_Top_20_Combine[c(1:6, 11:15,7:8,16,9:10)]
 # Create Monthly Top 50 Vendors SOT Table ----
 Monthly_Top_50_Vendors_SOT <- inner_join(SOT_Master, Top_50_Vendors, by = c("Parent_Vendor"= "Parent_Vendor"))
 Monthly_Top_50_Vendors_SOT <- Monthly_Top_50_Vendors_SOT %>%
-  filter(SOT_Master$ShipCancelWeek <= EOW) %>%
+  filter(ShipCancelWeek <= EOW) %>%
   group_by(ShipCancelMonth) %>% 
   summarise("SOTUnits" = floor(sum(Units)),
             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -442,7 +442,7 @@ Monthly_Top_50_Vendors_SOT <- Monthly_Top_50_Vendors_SOT %>%
 # Create Monthly Top 50 Vendors OTS Table ----
 Monthly_Top_50_Vendors_OTS <- inner_join(OTS_Master, Top_50_Vendors, by = c("Parent_Vendor"= "Parent_Vendor"))
 Monthly_Top_50_Vendors_OTS <- Monthly_Top_50_Vendors_OTS %>%
-  filter(OTS_Master$Week <= EOW) %>%
+  filter(Week <= EOW) %>%
   group_by(Month_Number) %>% 
   summarise("OTSUnits" = sum(Units),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
