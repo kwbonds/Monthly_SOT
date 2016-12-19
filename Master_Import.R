@@ -482,6 +482,61 @@ Monthly_Top_50_Vendors_Combine <- Monthly_Top_50_Vendors_Combine[c(1:6, 11:15,7:
  OTSvsSOT <- inner_join(OTS_vs, SOT_vs, by = c("NUMBER_SEQ"= "NUMBER_SEQ")) %>%
    group_by(Month_Number, StockedOnTime, ShippedOnTime) %>% 
    summarise("SumOfUnits" = floor(sum(Units)))
+ 
+# Create Monthly Brand Top 10 Delay Combine ----
+Brand_Top_Ten_Delay <-  SOT_Master %>% 
+   filter(ShipCancelWeek <= EOW) %>%
+   group_by(ReportingBrand, ShipCancelMonth, Parent_Vendor) %>% 
+   summarise("SOTUnits" = floor(sum(Units)),
+             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
+             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
+             "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
+             "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
+             "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
+             "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
+             "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
+   select(
+          ReportingBrand,
+          ShipCancelMonth,
+          Parent_Vendor,
+          SOTUnits, 
+          SOTOnTimeUnits, 
+          SOTLateUnits, 
+          SOTLate5daysUnits, 
+          WTSOTLateUnits) %>% 
+   top_n(10, SOTLateUnits) %>% 
+   arrange(ReportingBrand,ShipCancelMonth, desc(SOTLateUnits))
+   
+# Create Monthly Category Top 10 Delay Combine ----
+Category_Top_Ten_Delay <-  SOT_Master %>% 
+   filter(ShipCancelWeek <= EOW) %>%
+   group_by(Category, ShipCancelMonth, Parent_Vendor) %>% 
+   summarise("SOTUnits" = floor(sum(Units)),
+             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
+             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
+             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
+             "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
+             "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
+             "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
+             "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
+             "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
+   select(
+          Category,
+          ShipCancelMonth,
+          Parent_Vendor,
+          SOTUnits, 
+          SOTOnTimeUnits, 
+          SOTLateUnits, 
+          SOTLate5daysUnits, 
+          WTSOTLateUnits, 
+          PPAUnits,
+          PPASOTLateUnits,
+          PPASOT5daysLateUnits,
+          WTPPASOTLateUnits) %>% 
+   top_n(10, SOTLateUnits) %>% 
+   arrange(Category, ShipCancelMonth, desc(SOTLateUnits))
+   
 # Write tables ----
 write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
@@ -492,6 +547,8 @@ write_csv(Monthly_by_DC, path = paste(SOT_OTS_directory,  paste('Monthly_by_DC_W
 write_csv(Monthly_Top_20_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Top_20_Countries_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Top_50_Vendors_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Top_50_Vendors_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(OTSvsSOT, path = paste(SOT_OTS_directory,  paste('OTSvsSOT_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Brand_Top_Ten_Delay, path = paste(SOT_OTS_directory,  paste('Brand_Top_10_Delay_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Category_Top_Ten_Delay, path = paste(SOT_OTS_directory,  paste('Category_Top_10_Delay_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 
 # Experimental section ----
 On_Time_Stock_table <- OTS_Master %>% 
