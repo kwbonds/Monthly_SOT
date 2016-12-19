@@ -6,15 +6,9 @@ library(formattable)
 library(RJDBC)
 library(rChoiceDialogs)
 
-# Choose file directory ----
-choose_file_directory <- function()
-{
-  v <- jchoose.dir()
-  return(v)
-}
 
 SOT_OTS_directory <- choose_file_directory()
-
+this_Year <- as.Date()
 
 # Create RODBC connection---- 
 my_connect <- odbcConnect(dsn= "IP EDWP", uid= my_uid, pwd= my_pwd)
@@ -53,6 +47,7 @@ prompt_for_week <- function()
   return(as.integer(n))
 }
 
+
 choose_file_directory <- function()
 {
   v <- jchoose.dir()
@@ -62,6 +57,7 @@ choose_file_directory <- function()
 SOT_OTS_directory <- choose_file_directory()
 
 EOW <- prompt_for_week()
+
 # Remove noise from OTS and SOT Master ----
 # grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
 OTS_Master <- OTS_Master %>% 
@@ -73,7 +69,8 @@ OTS_Master <- OTS_Master %>%
 SOT_Master <- SOT_Master %>% 
   filter(ShipCancelWeek <= EOW,
          !grepl("Liberty Distribution", Parent_Vendor, ignore.case = TRUE),
-         !grepl("dummy", Parent_Vendor, ignore.case = TRUE)) 
+         !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
+         MetricShipDate <= Sys.Date()) 
 
 
 # Create TOP 20 Countries Table ----
@@ -488,6 +485,7 @@ Brand_Top_Ten_Delay <-  SOT_Master %>%
    filter(ShipCancelWeek <= EOW) %>%
    group_by(ReportingBrand, ShipCancelMonth, Parent_Vendor) %>% 
    summarise("SOTUnits" = floor(sum(Units)),
+             "AdjustedSOTUnits"= floor(sum(Units[Lateness=="OnTime"]) + sum(Units[Lateness=="Late"])),
              "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
              "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
              "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
@@ -500,7 +498,8 @@ Brand_Top_Ten_Delay <-  SOT_Master %>%
           ReportingBrand,
           ShipCancelMonth,
           Parent_Vendor,
-          SOTUnits, 
+          SOTUnits,
+          AdjustedSOTUnits,
           SOTOnTimeUnits, 
           SOTLateUnits, 
           SOTLate5daysUnits, 
