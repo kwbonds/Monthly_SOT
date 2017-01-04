@@ -6,9 +6,24 @@ library(formattable)
 library(RJDBC)
 library(rChoiceDialogs)
 
+# setup environment ----
+prompt_for_week <- function()
+{ 
+  n <- readline(prompt="Enter Week number: ")
+  return(as.integer(n))
+}
+
+
+choose_file_directory <- function()
+{
+  v <- jchoose.dir()
+  return(v)
+}
 
 SOT_OTS_directory <- choose_file_directory()
-this_Year <- as.Date()
+
+EOW <- prompt_for_week()
+
 
 # Create RODBC connection---- 
 my_connect <- odbcConnect(dsn= "IP EDWP", uid= my_uid, pwd= my_pwd)
@@ -29,35 +44,17 @@ SOT_Master <- sqlQuery(my_connect,
 OTS_Master <- sqlQuery(my_connect, 
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
 close(my_connect)
+# Alternatively load from Weekly SOT ----
+# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk48\\SOT_Master_object.rtf")
+# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk48\\OTS_Master_object.rtf")
+
+source("SOT_OTS_Custom_Functions.R")
 # Import static files ----
 Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
 Country_description <- read_delim(file= "Country Description.txt", delim = "^")
 # save Master Objects ----
-# save(SOT_Master, file = "SOT_Master_object2.rtf")
-# save(OTS_Master, file = "OTS_Master_object2.rtf")
-
-# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\SOT_Master_object2.rtf")
-# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk43\\OTS_Master_object2.rtf")
-
-source("SOT_OTS_Custom_Functions.R")
-# setup environment ----
-prompt_for_week <- function()
-{ 
-  n <- readline(prompt="Enter Week number: ")
-  return(as.integer(n))
-}
-
-
-choose_file_directory <- function()
-{
-  v <- jchoose.dir()
-  return(v)
-}
-
-SOT_OTS_directory <- choose_file_directory()
-
-EOW <- prompt_for_week()
-
+save(SOT_Master, file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
+save(OTS_Master, file = paste(SOT_OTS_directory,  'OTS_Master_object.rtf', sep = .Platform$file.sep ))
 # Remove noise from OTS and SOT Master ----
 # grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
 OTS_Master <- OTS_Master %>% 
