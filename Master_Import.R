@@ -512,6 +512,7 @@ Category_Top_Ten_Delay <-  SOT_Master %>%
    filter(ShipCancelWeek <= EOW) %>%
    group_by(Category, ShipCancelMonth, Parent_Vendor) %>% 
    summarise("SOTUnits" = floor(sum(Units)),
+             "AdjustedSOTUnits"= floor(sum(Units[Lateness=="OnTime"]) + sum(Units[Lateness=="Late"])),
              "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
              "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
              "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
@@ -524,15 +525,12 @@ Category_Top_Ten_Delay <-  SOT_Master %>%
           Category,
           ShipCancelMonth,
           Parent_Vendor,
-          SOTUnits, 
+          SOTUnits,
+          AdjustedSOTUnits,
           SOTOnTimeUnits, 
           SOTLateUnits, 
           SOTLate5daysUnits, 
-          WTSOTLateUnits, 
-          PPAUnits,
-          PPASOTLateUnits,
-          PPASOT5daysLateUnits,
-          WTPPASOTLateUnits) %>% 
+          WTSOTLateUnits) %>% 
    top_n(10, SOTLateUnits) %>% 
    arrange(Category, ShipCancelMonth, desc(SOTLateUnits))
    
