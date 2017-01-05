@@ -6,6 +6,7 @@ library(formattable)
 library(RJDBC)
 library(rChoiceDialogs)
 library(lubridate)
+library(RCurl)
 
 # setup environment ----
 prompt_for_week <- function()
@@ -47,8 +48,12 @@ close(my_connect)
 
 source("SOT_OTS_Custom_Functions.R")
 # Import static files ----
-Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
-Country_description <- read_delim(file= "Country Description.txt", delim = "^")
+# Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
+# Country_description <- read_delim(file= "Country Description.txt", delim = "^")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Preferred%20Vendor%20(new).csv")
+Preferred_Vendor_new <- read_delim(file = pref_conn, delim = "^")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Country%20Description.txt")
+Country_description <- read_delim(file = pref_conn, delim = "^")
 # save Master Objects ----
 save(SOT_Master, file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
 save(OTS_Master, file = paste(SOT_OTS_directory,  'OTS_Master_object.rtf', sep = .Platform$file.sep ))

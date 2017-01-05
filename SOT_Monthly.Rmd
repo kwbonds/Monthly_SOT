@@ -13,6 +13,7 @@ library(RODBC)
 library(formattable)
 library(RJDBC)
 library(rChoiceDialogs)
+library(RCurl)
 
 ```
 
@@ -75,19 +76,22 @@ load(SOT_conn)
 load(OTS_conn)
 ```
 
-Now let's load a few static files that will we need for mapping and save the master objects we just created.
+Now let's download a few static files from Github and save the master objects we just created. We will need these for static mapping. 
 ```{r}
 # Import static files ----
-Preferred_Vendor_new <- read_delim(file = "ftp://ftp.gap.com/data/to_hq/SupplyChainReporting/GSCAT/SOTMasterObjects/Preferred Vendor (new).csv", 
-                                   delim = "^")
-Country_description <- read_delim(file= "ftp://ftp.gap.com/data/to_hq/SupplyChainReporting/GSCAT/SOTMasterObjects/Country Description.txt", 
-                                  delim = "^")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Preferred%20Vendor%20(new).csv")
+Preferred_Vendor_new <- read_delim(file = pref_conn, delim = "^")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Country%20Description.txt")
+Country_description <- read_delim(file = pref_conn, delim = "^")
+```
+```{r eval=FALSE}
 # save Master Objects ----
 save(SOT_Master, file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
 save(OTS_Master, file = paste(SOT_OTS_directory,  'OTS_Master_object.rtf', sep = .Platform$file.sep ))
 ```
 
-And create a few tables for joining.
+And create a few tables by joining and summarising.
+
 ```{r}
 # Create TOP 20 Countries Table ----
 Top_20_Countries <- left_join(SOT_Master, Country_description, by= c("CountryOfOrigin"="CTRY_CD" ))
