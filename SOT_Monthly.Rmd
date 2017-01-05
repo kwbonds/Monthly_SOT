@@ -3,7 +3,7 @@ title: "SOT/OTS Monthly Notebook"
 output:
   html_notebook: default
 ---
-This notebook documents the process for running the SOT/OTS monthly scripts in R. Preceeding these scripts is a SQL procedure and the end output is a collection of .csv files. The following document will demonstrate the process for creating the Master tables and also the output of a single .csv file. 
+This notebook documents the process for running the SOT/OTS monthly scripts in R. Preceding these scripts is a SQL procedure and the end output is a collection of .csv files. The following document will demonstrate the process for creating the Master tables and also the output of a single .csv file. 
 
 First we need to load our libraries.
 ```{r warning=FALSE, error=FALSE}
@@ -33,7 +33,7 @@ choose_file_directory <- function()
 
 ```
 
-The following code will open a system-independent, file chooser using Java and the function created above. It will allow you to choose the directory in which to save all files. This will sometimes fail the first time it is run. If it fails just rerun it (usualy works the second time). Note: Eval is set to off to disable dynamic functionality for this notebook. This notebook will use the current working directory instead.  
+The following code will open a system-independent, file chooser using Java and the function created above. It will allow you to choose the directory in which to save all files. This will sometimes fail the first time it is run. If it fails just rerun it (usually works the second time). Note: Eval is set to off to disable dynamic functionality for this notebook. This notebook will use the current working directory instead.  
 ```{r eval=FALSE}
 SOT_OTS_directory <- choose_file_directory()
 ```
@@ -47,7 +47,7 @@ EOW <- 48
 
 ```
 
-Next we need to create a connection to EDWP. Once you have stored your username and password as my_uid and my_pwd; and created a DSN, connect with a string similar to this (You may need to change the below if you gave your DSN an differnet name). Then verify that we have succesfully connected by performing a query on the dbcinfo table.
+Next we need to create a connection to EDWP. Once you have stored your username and password as my_uid and my_pwd; and created a DSN, connect with a string similar to this (You may need to change the below if you gave your DSN an different  name). Then verify that we have successfully connected by performing a query on the dbcinfo table.
 
 ```{r warning = FALSE}
 # Create RODBC connection---- 
@@ -67,7 +67,7 @@ OTS_Master <- sqlQuery(my_connect,
 close(my_connect)
 ```
 
-For the purpose of this notebook, we will not query the database however. Instead, we will load objects already created and stored on an FTP site on the corprate network.  
+For the purpose of this notebook, we will not query the database however. Instead, we will load objects already created and stored on an FTP site on the corporate network.  
 ```{r echo=FALSE}
 SOT_conn <- url("ftp://ftp.gap.com/data/to_hq/SupplyChainReporting/GSCAT/SOTMasterObjects/SOT_Master_object.rtf")
 OTS_conn <- url("ftp://ftp.gap.com/data/to_hq/SupplyChainReporting/GSCAT/SOTMasterObjects/OTS_Master_object.rtf")
@@ -109,7 +109,7 @@ Top_50_Vendors <- SOT_Master %>%
 ```
 
 
-Check the first 6 rows of SOT Master to test that our load() was successsful:
+Check the first 6 rows of SOT Master to test that our load() was successful:
 ```{r}
 head(SOT_Master)
 ```
@@ -172,7 +172,7 @@ write_csv(Monthly_Brand_Category_Combine,
                        paste('Monthly_Brand_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 ```
 
-That is it. The basic process is complete. The remaining tables can be created in much the same way.
+That is it! The basic process is complete. The remaining tables can be created in much the same way.
 
 \pagebreak
 
