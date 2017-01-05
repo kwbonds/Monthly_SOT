@@ -5,6 +5,7 @@ library(RODBC)
 library(formattable)
 library(RJDBC)
 library(rChoiceDialogs)
+library(lubridate)
 
 # setup environment ----
 prompt_for_week <- function()
@@ -12,16 +13,12 @@ prompt_for_week <- function()
   n <- readline(prompt="Enter Week number: ")
   return(as.integer(n))
 }
-
-
 choose_file_directory <- function()
 {
   v <- jchoose.dir()
   return(v)
 }
-
 SOT_OTS_directory <- choose_file_directory()
-
 EOW <- prompt_for_week()
 
 
@@ -226,7 +223,7 @@ Monthly_Brand_OTS <- OTS_Master %>%
          OTSLate5daysUnits, 
          WTOTSLateUnits, 
          PPAOTSLateUnits)
-View(Monthly_Brand_OTS)
+# View(Monthly_Brand_OTS)
 
 # Create Monthly OTS Category Table ----
 Monthly_Category_OTS <- OTS_Master %>%
@@ -246,7 +243,7 @@ Monthly_Category_OTS <- OTS_Master %>%
          OTSLate5daysUnits, 
          WTOTSLateUnits, 
          PPAOTSLateUnits)
-View(Monthly_Category_OTS)
+# View(Monthly_Category_OTS)
 
 # Create Monthly Gap Inc OTS Table ----
 Monthly_GapInc_OTS <- OTS_Master %>%
