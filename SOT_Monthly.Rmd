@@ -6,7 +6,7 @@ output:
 This notebook documents the process for running the SOT/OTS monthly scripts in R. Preceding these scripts is a SQL procedure and the end output is a collection of .csv files. The following document will demonstrate the process for creating the Master tables and also the output of a single .csv file. 
 
 First we need to load our libraries.
-```{r warning=FALSE, error=FALSE}
+```{r warning=FALSE, error=FALSE, comment= FALSE}
 library(dplyr)
 library(readr)
 library(RODBC)
@@ -56,7 +56,7 @@ sqlQuery(my_connect, query = "SELECT  * from dbc.dbcinfo;")
 ```
 We can see that the server has returned our table! We have connected! 
 
-Next we need to create our master tables via query and store them as R objects. 
+Then we create our master tables via query and store them as R objects.
 ```{r eval=FALSE}
 # Query EDW ----
 SOT_Master <- sqlQuery(my_connect, 
@@ -67,7 +67,7 @@ OTS_Master <- sqlQuery(my_connect,
 close(my_connect)
 ```
 
-For the purpose of this notebook, we will not query the database however. Instead, we will load objects already created and stored on an FTP site on the corporate network.  
+For the purpose of this notebook, however, we will not query the database. Instead, we will load objects already created and stored on the corporate FTP server.  
 ```{r echo=FALSE}
 SOT_conn <- url("ftp://ftp.gap.com/data/to_hq/SupplyChainReporting/GSCAT/SOTMasterObjects/SOT_Master_object.rtf")
 OTS_conn <- url("ftp://ftp.gap.com/data/to_hq/SupplyChainReporting/GSCAT/SOTMasterObjects/OTS_Master_object.rtf")
@@ -107,7 +107,6 @@ Top_50_Vendors <- SOT_Master %>%
   arrange(desc(`Units by Vendor`)) %>% 
   head(50)
 ```
-
 
 Check the first 6 rows of SOT Master to test that our load() was successful:
 ```{r}
@@ -161,8 +160,9 @@ Monthly_Brand_Category_SOT <- SOT_Master %>%
 ```
 
 Taking a look at our new table:
+
 ```{r echo=FALSE}
-Monthly_Brand_Category_SOT[sample(1:nrow(Monthly_Brand_Category_SOT), 10), ]
+format(Monthly_Brand_Category_SOT[sample(1:nrow(Monthly_Brand_Category_SOT), 10), ], big.mark = ",")
 ```
 
 Lastly we need to output this file as a csv. The file will be output to the directory you set up using the Java file chooser earlier (deactivated for this notebook).  
