@@ -1,0 +1,82 @@
+---
+title: "Mas Active Details"
+output:
+  html_notebook: default
+---
+<style>
+  .myTable td {
+    padding: 10px;
+    border-bottom: 1px solid black;
+  }
+</style>
+
+```{r echo=FALSE, message=FALSE, error=FALSE}
+library(dplyr)
+library(knitr)
+```
+
+Hi Elvin,
+
+I'm not sure what question you are trying to answer, but here is a high-level overview of Mas Active. Which I believe is the parent brand. Correct me if I'm wrong. 
+
+
+
+Looking at the YTD data, the Unit breakdwon by category is such:
+
+```{r echo=FALSE}
+Mas_Active <- SOT_Master %>% filter(Parent_Vendor == levels(Parent_Vendor)[223]) %>% 
+  select(Parent_Vendor, Category, Units ) %>% 
+  group_by(Parent_Vendor, Category) %>% 
+  summarise("SOT_Units" = sum(Units)) %>% 
+  arrange(desc(SOT_Units))
+kable(Mas_Active, "html", table.attr='class="myTable"', format.args = list(big.mark=","), caption = "YTD Units by Category and Vendor")
+```
+
+
+<br>
+Assuming you are interested in December only. I filtered down the month and show the Units for the month of December.
+
+```{r echo=FALSE}
+Mas_Active_Dec <- SOT_Master %>% filter(Parent_Vendor == levels(Parent_Vendor)[223], 
+                                       FISCAL_YEAR==2016, 
+                                       grepl("DEC", Fiscal_Month, ignore.case = TRUE)) %>% 
+  select(Parent_Vendor, Category, Units ) %>% 
+  group_by(Parent_Vendor, Category) %>% 
+  summarise("SOT_Units" = sum(Units)) %>% 
+    arrange(desc(SOT_Units))
+kable(Mas_Active_Dec, format = "html", table.attr='class="myTable"', format.args= list(big.mark = ","), caption = "Units by Category and Vendor for December")
+
+```
+
+<br>
+
+##### **Lateness by Brand and Category:**
+
+To add some depth, we can look at the "Lateness" by brand and Category as well. Not sure what question you are trying to ask, but hope this helps.  
+
+
+```{r echo=FALSE}
+Mas_Active_Late <- SOT_Master %>% filter(Parent_Vendor == levels(Parent_Vendor)[223], 
+                                       FISCAL_YEAR==2016, 
+                                       grepl("DEC", Fiscal_Month, ignore.case = TRUE)) %>% 
+  select(Parent_Vendor, Category, Units, ReportingBrand, Lateness ) %>% 
+  group_by(Parent_Vendor, Category, ReportingBrand, Lateness) %>% 
+  summarise("SOT_Units" = sum(Units)) %>% 
+    arrange( desc(SOT_Units))
+kable(Mas_Active_Late, "html", table.attr='class="myTable"',format.args= list(big.mark = ","), caption = "Lateness by Brand and Category for December")
+```
+<br>
+
+Or if you want to see the same thing for the YTD:
+
+
+```{r echo=FALSE}
+Mas_Active_Late <- SOT_Master %>% filter(Parent_Vendor == levels(Parent_Vendor)[223]) %>% 
+  select(Parent_Vendor, Category, Units, ReportingBrand, Lateness ) %>% 
+  group_by(Parent_Vendor, Category, ReportingBrand, Lateness) %>% 
+  summarise("SOT_Units" = floor(sum(Units))) %>% 
+    arrange((desc(SOT_Units)))
+kable(Mas_Active_Late, "html", table.attr='class="myTable"',format.args= list(big.mark = ","), caption = "Lateness by Brand and Category for YTD")
+```
+
+
