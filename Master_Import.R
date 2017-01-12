@@ -36,6 +36,10 @@ sqlQuery(my_connect, query = "SELECT  * from dbc.dbcinfo;")
 #                       query = "SELECT  * from dbc.dbcinfo;")
 
 # Query EDW ----
+
+my_uid <- read_lines("C:\\Users\\Ke2l8b1\\Documents\\my_uid.txt")
+my_pwd <- read_lines("C:\\Users\\Ke2l8b1\\Documents\\my_pwd.txt")
+
 SOT_Master <- sqlQuery(my_connect, 
                        query = "SELECT  * from SRAA_SAND.VIEW_SOT_MASTER;")
 

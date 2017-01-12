@@ -48,6 +48,11 @@ EOW <- 48
 ```
 
 Next we need to create a connection to EDWP. Once you have stored your username and password as my_uid and my_pwd; and created a DSN, connect with a string similar to this (You may need to change the below if you gave your DSN an different  name). Then verify that we have successfully connected by performing a query on the dbcinfo table.
+```{r echo=FALSE}
+my_uid <- read_lines("C:\\Users\\Ke2l8b1\\Documents\\my_uid.txt")
+my_pwd <- read_lines("C:\\Users\\Ke2l8b1\\Documents\\my_pwd.txt")
+```
+
 
 ```{r warning = FALSE}
 # Create RODBC connection---- 
