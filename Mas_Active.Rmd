@@ -10,9 +10,10 @@ output:
   }
 </style>
 
-```{r echo=FALSE, message=FALSE, error=FALSE}
+```{r echo=FALSE, message=FALSE, error=FALSE, message=FALSE}
 library(dplyr)
 library(knitr)
+library(DT)
 ```
 
 Hi Elvin,
@@ -63,7 +64,7 @@ Mas_Active_Late <- SOT_Master %>% filter(Parent_Vendor == levels(Parent_Vendor)[
   group_by(Parent_Vendor, Category, ReportingBrand, Lateness) %>% 
   summarise("SOT_Units" = sum(Units)) %>% 
     arrange( desc(SOT_Units))
-kable(Mas_Active_Late, "html", table.attr='class="myTable"',format.args= list(big.mark = ","), caption = "Lateness by Brand and Category for December")
+datatable(format(Mas_Active_Late, big.mark = ","), options = list(pageLength = 5), caption = "Lateness by Brand and Category for December")
 ```
 <br>
 
@@ -76,7 +77,8 @@ Mas_Active_Late <- SOT_Master %>% filter(Parent_Vendor == levels(Parent_Vendor)[
   group_by(Parent_Vendor, Category, ReportingBrand, Lateness) %>% 
   summarise("SOT_Units" = floor(sum(Units))) %>% 
     arrange((desc(SOT_Units)))
-kable(Mas_Active_Late, "html", table.attr='class="myTable"',format.args= list(big.mark = ","), caption = "Lateness by Brand and Category for YTD")
+# kable(Mas_Active_Late, "html", table.attr='class="myTable"',format.args= list(big.mark = ","), caption = "Lateness by Brand and Category for YTD")
+datatable(format(Mas_Active_Late, big.mark = ","), options = list(pageLength = 5), caption = "Lateness by Brand and Category for YTD" )
 ```
 
 
