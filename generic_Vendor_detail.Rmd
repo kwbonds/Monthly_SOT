@@ -1,0 +1,142 @@
+---
+title: "Vendor Details" 
+output:
+  html_notebook: default
+---
+<style>
+  .myTable td {
+    padding: 10px;
+    border-bottom: 1px solid black;
+  }
+</style>
+
+```{r echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
+library(dplyr)
+library(knitr)
+library(DT)
+library(plotly)
+```
+
+Hi Elvin,
+
+I'm not sure what question you are trying to answer, but here is a high-level overview of Mas Active. Which I believe is the parent brand. Correct me if I'm wrong. 
+
+```{r echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
+vendor_levels <- as.data.frame(levels(SOT_Master$Parent_Vendor))
+
+```
+
+```{r echo =FALSE, message=FALSE, error=FALSE, warning = FALSE}
+vendor_sub <-  levels(SOT_Master$Parent_Vendor)[223]
+
+```
+
+
+
+Looking at the YTD data, the Unit breakdwon by category for Vendor: **`r vendor_sub`** is such:
+
+```{r echo=FALSE}
+gen_Vendor <- SOT_Master %>% filter(Parent_Vendor == vendor_sub) %>% 
+  select(Parent_Vendor, Category, Units ) %>% 
+  group_by(Parent_Vendor, Category) %>% 
+  summarise("SOT_Units" = sum(Units)) %>% 
+  arrange(desc(SOT_Units))
+kable(gen_Vendor, "html", table.attr='class="myTable"', format.args = list(big.mark=","), caption = "YTD Units by Category and Vendor")
+```
+
+
+<br>
+Assuming you are interested in December only. I filtered down the month and show the Units for the month of December.
+
+```{r echo=FALSE}
+gen_Vendor_Dec <- SOT_Master %>% filter(Parent_Vendor == vendor_sub, 
+                                       FISCAL_YEAR==2016, 
+                                       grepl("DEC", Fiscal_Month, ignore.case = TRUE)) %>% 
+  select(Parent_Vendor, Category, Units ) %>% 
+  group_by(Parent_Vendor, Category) %>% 
+  summarise("SOT_Units" = sum(Units)) %>% 
+    arrange(desc(SOT_Units))
+kable(gen_Vendor_Dec, format = "html", table.attr='class="myTable"', format.args= list(big.mark = ","), caption = "Units by Category and Vendor for December")
+
+```
+
+<br>
+
+##### **Lateness by Brand and Category:**
+
+To add some depth, we can look at the "Lateness" by brand and Category as well. Not sure what question you are trying to ask, but hope this helps.  
+
+
+```{r echo=FALSE}
+gen_Vendor_Late <- SOT_Master %>% filter(Parent_Vendor == vendor_sub, 
+                                       FISCAL_YEAR==2016, 
+                                       grepl("DEC", Fiscal_Month, ignore.case = TRUE)) %>% 
+  select(Parent_Vendor, Category, Units, ReportingBrand, Lateness ) %>% 
+  group_by(Parent_Vendor, Category, ReportingBrand, Lateness) %>% 
+  summarise("SOT_Units" = sum(Units)) %>% 
+    arrange( desc(SOT_Units))
+datatable(format(gen_Vendor_Late, big.mark = ","), extensions = 'Buttons', options = list(
+  pageLength = 5,
+  dom = 'Bflrtip',
+  buttons = list(
+  'colvis',
+  list(
+  extend = 'collection',
+  buttons = c('csv', 'excel', 'pdf'),
+  text = 'Download'
+  )
+  )), caption = "Lateness by Brand and Category for December")
+```
+<br>
+```{r echo=FALSE, include = FALSE, warning= FALSE, message= FALSE, error=FALSE}
+gen_Vendor_plot <- gen_Vendor_Late %>% 
+  group_by(ReportingBrand, Lateness) %>% 
+  summarise("Shipped Units" = sum(SOT_Units)) 
+
+plot_ly(mas_plot, x = mas_plot$ReportingBrand, y = mas_plot$`Shipped Units`)
+```
+
+Or if you want to see the same thing for the YTD:
+
+
+```{r echo=FALSE}
+gen_Vendor_Late <-
+  SOT_Master %>% filter(Parent_Vendor == vendor_sub) %>%
+  select(Parent_Vendor, Category, Units, ReportingBrand, Lateness) %>%
+  group_by(Parent_Vendor, Category, ReportingBrand, Lateness) %>%
+  summarise("SOT_Units" = floor(sum(Units))) %>%
+  arrange((desc(SOT_Units)))
+  # kable(gen_Vendor_Late, "html", table.attr='class="myTable"',format.args= list(big.mark = ","), caption = "Lateness by Brand and Category for YTD")
+  datatable(
+  format(gen_Vendor_Late, big.mark = ","),
+  options = list(
+  pageLength = 5,
+  dom = 'Bflrtip',
+  buttons = list(
+  'colvis',
+  list(
+  extend = 'collection',
+  buttons = c('csv', 'excel', 'pdf'),
+  text = 'Download'
+  )
+  ),
+  caption = "Lateness by Brand and Category for YTD"
+  ))
+```
+<br>
+
+Also, If you are interested in the raw data, see below. Quite a lot of columns, so you need to use the scroll bar. Again, hope this helps. 
+
+```{r eval = FALSE, echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
+full_details <- SOT_Master %>% 
+  filter(Parent_Vendor == vendor_sub, 
+         FISCAL_YEAR==2016)
+
+datatable(format(full_details, big.mark =","), extensions ='Buttons'  , options = list(pageLength = 20, dom = 'Bflrtip', scrollX = TRUE, buttons = 
+                                                 list('colvis', list(
+                                                   extend = 'collection',
+                                                   buttons = c('csv', 'excel', 'pdf'),
+                                                   text = 'Download'
+                                                 ))))
+```
+
