@@ -30,6 +30,11 @@ choose_file_directory <- function()
   v <- jchoose.dir()
   return(v)
 }
+prompt_for_year <- function()
+{ 
+  n <- readline(prompt="Enter Fiscal Year as YYYY: ")
+  return(as.integer(n))
+}
 
 ```
 
@@ -93,6 +98,17 @@ Country_description <- read_delim(file = pref_conn, delim = "^")
 # save Master Objects ----
 save(SOT_Master, file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
 save(OTS_Master, file = paste(SOT_OTS_directory,  'OTS_Master_object.rtf', sep = .Platform$file.sep ))
+
+# load(file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
+# load(file = paste(SOT_OTS_directory,  'OTS_Master_object.rtf', sep = .Platform$file.sep))
+```
+
+```{r }
+SOT_Data_Pulled <- SOT_Master$Data_Pulled[1]
+OTS_Data_Pulled <- OTS_Master$Data_Pulled[1]
+# Check date
+SOT_Data_Pulled
+OTS_Data_Pulled
 ```
 
 And create a few tables by joining and summarising.
@@ -131,7 +147,7 @@ SOT_Master <- SOT_Master %>%
   filter(ShipCancelWeek <= EOW,
          !grepl("Liberty Distribution", Parent_Vendor, ignore.case = TRUE),
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
-         MetricShipDate <= Sys.Date()) 
+         MetricShipDate <= SOT_Data_Pulled) 
 ```
 
 

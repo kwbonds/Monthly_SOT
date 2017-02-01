@@ -19,9 +19,14 @@ choose_file_directory <- function()
   v <- jchoose.dir()
   return(v)
 }
+prompt_for_year <- function()
+{ 
+  n <- readline(prompt="Enter Fiscal Year as YYYY: ")
+  return(as.integer(n))
+}
 SOT_OTS_directory <- choose_file_directory()
 EOW <- prompt_for_week()
-
+fis_yr <- prompt_for_year()
 
 # Create RODBC connection---- 
 my_connect <- odbcConnect(dsn= "IP EDWP", uid= my_uid, pwd= my_pwd)
@@ -61,6 +66,16 @@ Country_description <- read_delim(file = pref_conn, delim = "^")
 # save Master Objects ----
 save(SOT_Master, file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
 save(OTS_Master, file = paste(SOT_OTS_directory,  'OTS_Master_object.rtf', sep = .Platform$file.sep ))
+
+# load(file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
+# load(file = paste(SOT_OTS_directory,  'OTS_Master_object.rtf', sep = .Platform$file.sep))
+
+SOT_Data_Pulled <- SOT_Master$Data_Pulled[1]
+OTS_Data_Pulled <- OTS_Master$Data_Pulled[1]
+# Check date
+SOT_Data_Pulled
+OTS_Data_Pulled
+
 # Remove noise from OTS and SOT Master ----
 # grep("Liberty Distribution", OTS_Master$Parent_Vendor, ignore.case=TRUE)
 OTS_Master <- OTS_Master %>% 
@@ -71,9 +86,10 @@ OTS_Master <- OTS_Master %>%
 
 SOT_Master <- SOT_Master %>% 
   filter(ShipCancelWeek <= EOW,
+         SOT_Master$FISCAL_YEAR == fis_yr,
          !grepl("Liberty Distribution", Parent_Vendor, ignore.case = TRUE),
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
-         MetricShipDate <= Sys.Date()) 
+         MetricShipDate <= SOT_Data_Pulled) 
 
 
 # Create TOP 20 Countries Table ----

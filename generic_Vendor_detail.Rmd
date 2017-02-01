@@ -1,5 +1,5 @@
 ---
-title: "Vendor Details" 
+title: Vendor Details - **`r vendor_sub`**
 output:
   html_notebook: default
 ---
@@ -17,9 +17,7 @@ library(DT)
 library(plotly)
 ```
 
-Hi Elvin,
-
-I'm not sure what question you are trying to answer, but here is a high-level overview of Mas Active. Which I believe is the parent brand. Correct me if I'm wrong. 
+Here is an overview of Vendor: **`r vendor_sub`**.  
 
 ```{r echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
 vendor_levels <- as.data.frame(levels(SOT_Master$Parent_Vendor))
@@ -33,7 +31,7 @@ vendor_sub <-  levels(SOT_Master$Parent_Vendor)[223]
 
 
 
-Looking at the YTD data, the Unit breakdwon by category for Vendor: **`r vendor_sub`** is such:
+Looking at the YTD data, the Unit breakdwon by category for YTD is:
 
 ```{r echo=FALSE}
 gen_Vendor <- SOT_Master %>% filter(Parent_Vendor == vendor_sub) %>% 
@@ -46,16 +44,20 @@ kable(gen_Vendor, "html", table.attr='class="myTable"', format.args = list(big.m
 
 
 <br>
-Assuming you are interested in December only. I filtered down the month and show the Units for the month of December.
 
 ```{r echo=FALSE}
 gen_Vendor_Dec <- SOT_Master %>% filter(Parent_Vendor == vendor_sub, 
                                        FISCAL_YEAR==2016, 
                                        grepl("DEC", Fiscal_Month, ignore.case = TRUE)) %>% 
-  select(Parent_Vendor, Category, Units ) %>% 
-  group_by(Parent_Vendor, Category) %>% 
+  select(Fiscal_Month, Parent_Vendor, Category, Units ) %>% 
+  group_by(Fiscal_Month, Parent_Vendor, Category) %>% 
   summarise("SOT_Units" = sum(Units)) %>% 
     arrange(desc(SOT_Units))
+```
+
+Looking only at the month of: **`r gen_Vendor_Dec$Fiscal_Month[1]`**
+
+```{r echo=FALSE}
 kable(gen_Vendor_Dec, format = "html", table.attr='class="myTable"', format.args= list(big.mark = ","), caption = "Units by Category and Vendor for December")
 
 ```
@@ -79,7 +81,6 @@ datatable(format(gen_Vendor_Late, big.mark = ","), extensions = 'Buttons', optio
   pageLength = 5,
   dom = 'Bflrtip',
   buttons = list(
-  'colvis',
   list(
   extend = 'collection',
   buttons = c('csv', 'excel', 'pdf'),
@@ -108,35 +109,46 @@ gen_Vendor_Late <-
   arrange((desc(SOT_Units)))
   # kable(gen_Vendor_Late, "html", table.attr='class="myTable"',format.args= list(big.mark = ","), caption = "Lateness by Brand and Category for YTD")
   datatable(
-  format(gen_Vendor_Late, big.mark = ","),
-  options = list(
+  format(gen_Vendor_Late, big.mark = ","), extensions = 'Buttons', options = list(
   pageLength = 5,
   dom = 'Bflrtip',
   buttons = list(
-  'colvis',
   list(
   extend = 'collection',
   buttons = c('csv', 'excel', 'pdf'),
   text = 'Download'
   )
-  ),
+  )),
   caption = "Lateness by Brand and Category for YTD"
-  ))
+  )
 ```
 <br>
 
-Also, If you are interested in the raw data, see below. Quite a lot of columns, so you need to use the scroll bar. Again, hope this helps. 
+Also, we can look at the raw data for the top 50 DPO's by Units. This is quite a lot of columns, so you need to use the scroll bar.
 
-```{r eval = FALSE, echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
-full_details <- SOT_Master %>% 
-  filter(Parent_Vendor == vendor_sub, 
-         FISCAL_YEAR==2016)
-
-datatable(format(full_details, big.mark =","), extensions ='Buttons'  , options = list(pageLength = 20, dom = 'Bflrtip', scrollX = TRUE, buttons = 
-                                                 list('colvis', list(
-                                                   extend = 'collection',
-                                                   buttons = c('csv', 'excel', 'pdf'),
-                                                   text = 'Download'
-                                                 ))))
+```{r echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
+full_details <- SOT_Master %>%
+  filter(Parent_Vendor == vendor_sub,
+  FISCAL_YEAR == 2016) %>%
+  arrange(desc(Units))
+  
+  datatable(
+  format(head(full_details, n = 50), big.mark = ","),
+  extensions = 'Buttons',
+  options = list(
+  pageLength = 5,
+  dom = 'Bflrtip',
+  scrollX = TRUE,
+  buttons =
+  list(
+ 'colvis',
+  list(
+  extend = 'collection',
+  buttons = c('csv', 'excel', 'pdf'),
+  text = 'Download'
+  )
+  )
+  )
+  )
 ```
 
