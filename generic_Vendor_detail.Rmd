@@ -7,6 +7,7 @@ output:
   .myTable td {
     padding: 10px;
     border-bottom: 1px solid black;
+    align-items: center
   }
 </style>
 
@@ -15,9 +16,12 @@ library(dplyr)
 library(knitr)
 library(DT)
 library(plotly)
+library(dygraphs)
 ```
 
-Here is an overview of Vendor: **`r vendor_sub`**.  
+Here is vendor specific informantion for Vendor: **`r vendor_sub`**.  
+\newline
+
 
 ```{r echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
 vendor_levels <- as.data.frame(levels(SOT_Master$Parent_Vendor))
@@ -25,20 +29,56 @@ vendor_levels <- as.data.frame(levels(SOT_Master$Parent_Vendor))
 ```
 
 ```{r echo =FALSE, message=FALSE, error=FALSE, warning = FALSE}
-vendor_sub <-  levels(SOT_Master$Parent_Vendor)[223]
+vendor_sub <-  levels(SOT_Master$Parent_Vendor)[442]
 
 ```
 
+```{r include=FALSE, echo=FALSE, message=FALSE, error=FALSE, warning = FALSE, fig.width=6}
+lungDeaths <- cbind(mdeaths, fdeaths)
+dygraph(lungDeaths) %>%
+  dySeries("mdeaths", label = "Male") %>%
+  dySeries("fdeaths", label = "Female") %>%
+  dyOptions(stackedGraph = TRUE) %>%
+  dyRangeSelector(height = 20)
+```
 
+
+```{r echo=FALSE, message=FALSE, error=FALSE, warning = FALSE}
+Weekly_SOT <- SOT_Master %>% 
+  filter(Parent_Vendor == vendor_sub) %>%
+  subset(Contract_Ship_Cancel >= "2016-01-31" & Contract_Ship_Cancel<= "2017-01-28") %>% 
+  group_by(Contract_Ship_Cancel) %>% 
+  summarise("On Time Units" = sum(Units[Lateness=="OnTime"], na.rm = TRUE),
+            "Late Units" = sum(Units[Lateness=="Late"], na.rm = TRUE),
+            "SOT Performance" = sum(`On Time Units`, na.rm=TRUE)/ (`On Time Units` + `Late Units`)*100) %>% 
+  select(Contract_Ship_Cancel, `SOT Performance`) %>% 
+  arrange(Contract_Ship_Cancel) %>% 
+  as.data.frame()
+```
+
+Shipped On Time Performance for **`r vendor_sub`** is shown for the given period `r min(Weekly_SOT$Contract_Ship_Cancel)` to `r max(Weekly_SOT$Contract_Ship_Cancel)`
+
+```{r echo=FALSE, message=FALSE, error=FALSE, warning = FALSE, fig.width=7, fig.align='center'}
+rownames(Weekly_SOT) <- Weekly_SOT$Contract_Ship_Cancel 
+Weekly_SOT <- select(Weekly_SOT, `SOT Performance`)
+Weekly_SOT <- as.xts(Weekly_SOT)
+dygraph(Weekly_SOT) %>% 
+  dySeries(label = "SOT %", name="SOT Performance") %>% 
+  dyRangeSelector()
+
+```
+
+<br>
 
 Looking at the YTD data, the Unit breakdwon by category for YTD is:
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.align='center'}
 gen_Vendor <- SOT_Master %>% filter(Parent_Vendor == vendor_sub) %>% 
   select(Parent_Vendor, Category, Units ) %>% 
   group_by(Parent_Vendor, Category) %>% 
   summarise("SOT_Units" = sum(Units)) %>% 
   arrange(desc(SOT_Units))
+
 kable(gen_Vendor, "html", table.attr='class="myTable"', format.args = list(big.mark=","), caption = "YTD Units by Category and Vendor")
 ```
 
@@ -57,7 +97,7 @@ gen_Vendor_Dec <- SOT_Master %>% filter(Parent_Vendor == vendor_sub,
 
 Looking only at the month of: **`r gen_Vendor_Dec$Fiscal_Month[1]`**
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.align='center'}
 kable(gen_Vendor_Dec, format = "html", table.attr='class="myTable"', format.args= list(big.mark = ","), caption = "Units by Category and Vendor for December")
 
 ```
