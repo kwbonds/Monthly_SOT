@@ -7,48 +7,13 @@ First we need to load our libraries.
 
 ``` r
 library(dplyr)
-```
-
-    FALSE 
-    FALSE Attaching package: 'dplyr'
-
-    FALSE The following objects are masked from 'package:stats':
-    FALSE 
-    FALSE     filter, lag
-
-    FALSE The following objects are masked from 'package:base':
-    FALSE 
-    FALSE     intersect, setdiff, setequal, union
-
-``` r
 library(readr)
 library(RODBC)
 library(formattable)
 library(RJDBC)
-```
-
-    FALSE Loading required package: DBI
-
-    FALSE Loading required package: rJava
-
-``` r
 library(rChoiceDialogs)
-```
-
-    FALSE This is rChoiceDialogs 1.0.6 2014-09-05
-
-``` r
 library(RCurl)
 ```
-
-    FALSE Loading required package: bitops
-
-    FALSE 
-    FALSE Attaching package: 'RCurl'
-
-    FALSE The following object is masked from 'package:rJava':
-    FALSE 
-    FALSE     clone
 
 Then set up our Environment with a few functions:
 
@@ -89,10 +54,10 @@ my_connect <- odbcConnect(dsn= "IP EDWP", uid= my_uid, pwd= my_pwd)
 sqlQuery(my_connect, query = "SELECT  * from dbc.dbcinfo;")
 ```
 
-    ##                 InfoKey    InfoData
-    ## 1               VERSION 14.10.07.10
-    ## 2               RELEASE 14.10.07.09
-    ## 3 LANGUAGE SUPPORT MODE    Standard
+    FALSE                 InfoKey    InfoData
+    FALSE 1               VERSION 14.10.07.10
+    FALSE 2               RELEASE 14.10.07.09
+    FALSE 3 LANGUAGE SUPPORT MODE    Standard
 
 We can see that the server has returned our table! We have connected!
 
@@ -136,25 +101,19 @@ OTS_Data_Pulled <- OTS_Master$Data_Pulled[1]
 SOT_Data_Pulled
 ```
 
-    ## [1] "2017-01-04"
+    FALSE [1] "2017-01-04"
 
 ``` r
 OTS_Data_Pulled
 ```
 
-    ## [1] "2017-01-04"
+    FALSE [1] "2017-01-04"
 
 And create a few tables by joining and summarising.
 
 ``` r
 # Create TOP 20 Countries Table ----
 Top_20_Countries <- left_join(SOT_Master, Country_description, by= c("CountryOfOrigin"="CTRY_CD" ))
-```
-
-    ## Warning in left_join_impl(x, y, by$x, by$y, suffix$x, suffix$y): joining
-    ## character vector and factor, coercing into character vector
-
-``` r
 Top_20_Countries <- Top_20_Countries %>% 
   group_by(CountryOfOrigin, CTRY_DESC) %>% 
   summarise("Units by Country" = floor(sum(Units))) %>% 
@@ -174,76 +133,76 @@ Check the first 6 rows of SOT Master to test that our load() was successful:
 head(SOT_Master)
 ```
 
-    ##   NUMBER_SEQ DEST_PO_ID ReportingBrand       Category
-    ## 1     516001    WR9XNDA         GAP NA       Sweaters
-    ## 2     914924    XK9LQAA         GAP NA          Knits
-    ## 3     876763    XJ1SS2A        ATHLETA Category Other
-    ## 4     121836    1332571   ON FRANCHISE    Accessories
-    ## 5     664187    WZ6VJ7A          ON NA         Wovens
-    ## 6    1531645    YW8WEAA         GAP NA       Sweaters
-    ##                        Parent_Vendor Contract_Ship_Cancel SHIP_CANCEL_DATE
-    ## 1 Hive & Honey - Binhai Sales Co LTD           2016-02-07       2016-02-07
-    ## 2   WUXI JINMAO FOREIGN TRADE CO LTD           2016-08-11       2016-08-11
-    ## 3             The Timberland Company           2016-09-01       2016-09-01
-    ## 4              AIM INTERNATIONAL INC           2016-12-19       2016-12-19
-    ## 5              COLUMBIA GARMENTS LTD           2016-05-14       2016-05-14
-    ## 6               THATS IT SWEATER LTD           2016-11-26       2016-11-26
-    ##   Units MetricShipDate StockedDate CountryOfOrigin Lateness
-    ## 1    11     2016-02-07  2016-02-10              CN   OnTime
-    ## 2    55     2016-08-12  2016-09-10              CN   OnTime
-    ## 3   450     2016-10-19  2016-10-21              US     Late
-    ## 4    14     2016-12-20  2016-12-30              CN   OnTime
-    ## 5  4118     2016-05-10  2016-06-22              BD   OnTime
-    ## 6   702     2016-11-21        <NA>              BD   OnTime
-    ##   ShipCancelMonth ShipCancelWeek DAYS_LATE Vendor_Rank
-    ## 1               1              2         0          96
-    ## 2               7             28         1          58
-    ## 3               8             31        48         378
-    ## 4              11             47         1         232
-    ## 5               4             15        -4          86
-    ## 6              10             43        -5         220
-    ##                    Fiscal_Month                     Quarter FISCAL_YEAR
-    ## 1   FEB (RLN): 2/6/16 - 2/27/16  Q1 (RLN): 2/6/16 - 4/30/16        2016
-    ## 2   AUG (RLN): 8/6/16 - 8/27/16 Q3 (RLN): 8/6/16 - 10/29/16        2016
-    ## 3   SEP (RLN): 9/3/16 - 10/1/16 Q3 (RLN): 8/6/16 - 10/29/16        2016
-    ## 4 DEC (RLN): 12/3/16 - 12/31/16 Q4 (RLN): 11/5/16 - 1/28/17        2016
-    ## 5   MAY (RLN): 5/7/16 - 5/28/16  Q2 (RLN): 5/7/16 - 7/30/16        2016
-    ## 6 NOV (RLN): 11/5/16 - 11/26/16 Q4 (RLN): 11/5/16 - 1/28/17        2016
-    ##   DC_GEO_LOC MasterVendorID AGT_DEPT_ID    AGENT_DEPT OPR_BRD_STY_ID
-    ## 1       <NA>        2038333       23316 S_SWTER_GP_WN         240796
-    ## 2       Ohio        2010075       14240 K_SLEEP_GP_WN         321122
-    ## 3       Ohio        2019085          NA          <NA>         403934
-    ## 4  Hong Kong        1001704          NA          <NA>         495847
-    ## 5   Gallatin        1006159       84413 W_BABYP_ON_TB         206193
-    ## 6       Ohio        2044715       13319 S_SWTER_GP_IB         627206
-    ##   Category_Source SALES_TERMS_CODE SHIP_MODE_CD ShipDateChoice
-    ## 1              XF              FOB            A             XF
-    ## 2              LP              FOB            O             LP
-    ## 3            InDC              DDP            M           InDC
-    ## 4              LP              FOB            O             LP
-    ## 5              OC              FCA            O             OC
-    ## 6              OC              FCA            O             OC
-    ##   Trade_Lane_Type ProgramType BUYING_AGENT_GROUP XFR_PT_COUNTRY_CODE
-    ## 1   International  TnR                       GIS                  CN
-    ## 2   International  MANUAL                    GIS                  CN
-    ## 3        Domestic  MANUAL                Non-GIS                  US
-    ## 4   International  MANUAL                    GIS                  CN
-    ## 5   International  RR                        GIS                  BD
-    ## 6   International  MANUAL                    GIS                  BD
-    ##   LOC_ABBR_NM SHP_MODE_CATG_NM
-    ## 1        <NA>       Parcel    
-    ## 2         OFC       Ocean     
-    ## 3         OFC       Motor     
-    ## 4       HK DC       Ocean     
-    ## 5         SDC       Ocean     
-    ## 6         OFC       Ocean     
-    ##                                      SHP_RSN_TYP_DESC Data_Pulled
-    ## 1                                                   -  2017-01-04
-    ## 2                                                   -  2017-01-04
-    ## 3                                                   -  2017-01-04
-    ## 4 Transportation Delay-Port/Infrastructure Constraint  2017-01-04
-    ## 5                                                   -  2017-01-04
-    ## 6          Transportation Delay-Bad Weather Condition  2017-01-04
+    FALSE   NUMBER_SEQ DEST_PO_ID ReportingBrand       Category
+    FALSE 1     516001    WR9XNDA         GAP NA       Sweaters
+    FALSE 2     914924    XK9LQAA         GAP NA          Knits
+    FALSE 3     876763    XJ1SS2A        ATHLETA Category Other
+    FALSE 4     121836    1332571   ON FRANCHISE    Accessories
+    FALSE 5     664187    WZ6VJ7A          ON NA         Wovens
+    FALSE 6    1531645    YW8WEAA         GAP NA       Sweaters
+    FALSE                        Parent_Vendor Contract_Ship_Cancel SHIP_CANCEL_DATE
+    FALSE 1 Hive & Honey - Binhai Sales Co LTD           2016-02-07       2016-02-07
+    FALSE 2   WUXI JINMAO FOREIGN TRADE CO LTD           2016-08-11       2016-08-11
+    FALSE 3             The Timberland Company           2016-09-01       2016-09-01
+    FALSE 4              AIM INTERNATIONAL INC           2016-12-19       2016-12-19
+    FALSE 5              COLUMBIA GARMENTS LTD           2016-05-14       2016-05-14
+    FALSE 6               THATS IT SWEATER LTD           2016-11-26       2016-11-26
+    FALSE   Units MetricShipDate StockedDate CountryOfOrigin Lateness
+    FALSE 1    11     2016-02-07  2016-02-10              CN   OnTime
+    FALSE 2    55     2016-08-12  2016-09-10              CN   OnTime
+    FALSE 3   450     2016-10-19  2016-10-21              US     Late
+    FALSE 4    14     2016-12-20  2016-12-30              CN   OnTime
+    FALSE 5  4118     2016-05-10  2016-06-22              BD   OnTime
+    FALSE 6   702     2016-11-21        <NA>              BD   OnTime
+    FALSE   ShipCancelMonth ShipCancelWeek DAYS_LATE Vendor_Rank
+    FALSE 1               1              2         0          96
+    FALSE 2               7             28         1          58
+    FALSE 3               8             31        48         378
+    FALSE 4              11             47         1         232
+    FALSE 5               4             15        -4          86
+    FALSE 6              10             43        -5         220
+    FALSE                    Fiscal_Month                     Quarter FISCAL_YEAR
+    FALSE 1   FEB (RLN): 2/6/16 - 2/27/16  Q1 (RLN): 2/6/16 - 4/30/16        2016
+    FALSE 2   AUG (RLN): 8/6/16 - 8/27/16 Q3 (RLN): 8/6/16 - 10/29/16        2016
+    FALSE 3   SEP (RLN): 9/3/16 - 10/1/16 Q3 (RLN): 8/6/16 - 10/29/16        2016
+    FALSE 4 DEC (RLN): 12/3/16 - 12/31/16 Q4 (RLN): 11/5/16 - 1/28/17        2016
+    FALSE 5   MAY (RLN): 5/7/16 - 5/28/16  Q2 (RLN): 5/7/16 - 7/30/16        2016
+    FALSE 6 NOV (RLN): 11/5/16 - 11/26/16 Q4 (RLN): 11/5/16 - 1/28/17        2016
+    FALSE   DC_GEO_LOC MasterVendorID AGT_DEPT_ID    AGENT_DEPT OPR_BRD_STY_ID
+    FALSE 1       <NA>        2038333       23316 S_SWTER_GP_WN         240796
+    FALSE 2       Ohio        2010075       14240 K_SLEEP_GP_WN         321122
+    FALSE 3       Ohio        2019085          NA          <NA>         403934
+    FALSE 4  Hong Kong        1001704          NA          <NA>         495847
+    FALSE 5   Gallatin        1006159       84413 W_BABYP_ON_TB         206193
+    FALSE 6       Ohio        2044715       13319 S_SWTER_GP_IB         627206
+    FALSE   Category_Source SALES_TERMS_CODE SHIP_MODE_CD ShipDateChoice
+    FALSE 1              XF              FOB            A             XF
+    FALSE 2              LP              FOB            O             LP
+    FALSE 3            InDC              DDP            M           InDC
+    FALSE 4              LP              FOB            O             LP
+    FALSE 5              OC              FCA            O             OC
+    FALSE 6              OC              FCA            O             OC
+    FALSE   Trade_Lane_Type ProgramType BUYING_AGENT_GROUP XFR_PT_COUNTRY_CODE
+    FALSE 1   International  TnR                       GIS                  CN
+    FALSE 2   International  MANUAL                    GIS                  CN
+    FALSE 3        Domestic  MANUAL                Non-GIS                  US
+    FALSE 4   International  MANUAL                    GIS                  CN
+    FALSE 5   International  RR                        GIS                  BD
+    FALSE 6   International  MANUAL                    GIS                  BD
+    FALSE   LOC_ABBR_NM SHP_MODE_CATG_NM
+    FALSE 1        <NA>       Parcel    
+    FALSE 2         OFC       Ocean     
+    FALSE 3         OFC       Motor     
+    FALSE 4       HK DC       Ocean     
+    FALSE 5         SDC       Ocean     
+    FALSE 6         OFC       Ocean     
+    FALSE                                      SHP_RSN_TYP_DESC Data_Pulled
+    FALSE 1                                                   -  2017-01-04
+    FALSE 2                                                   -  2017-01-04
+    FALSE 3                                                   -  2017-01-04
+    FALSE 4 Transportation Delay-Port/Infrastructure Constraint  2017-01-04
+    FALSE 5                                                   -  2017-01-04
+    FALSE 6          Transportation Delay-Bad Weather Condition  2017-01-04
 
 Once we have our master tables as R objects we need to clean them up a bit:
 
@@ -293,39 +252,39 @@ Monthly_Brand_Category_SOT <- SOT_Master %>%
 
 Taking a look at our new table:
 
-    ##    ShipCancelMonth ReportingBrand                Category  SOTUnits
-    ## 1                7   BR FRANCHISE                  Wovens    23,449
-    ## 2               10   ON FRANCHISE          Category Other     1,698
-    ## 3                6       GAP INTL                   Knits 4,480,815
-    ## 4                9          BR NA Denim and Woven Bottoms   562,753
-    ## 5               10          BR NA             Accessories   251,696
-    ## 6                1        ON INTL             Accessories    69,606
-    ## 7                6        ON INTL                   Knits   620,042
-    ## 8                9         GAP NA                  Wovens 1,086,271
-    ## 9                8        GO INTL             Accessories       855
-    ## 10               5          ON NA                Sweaters 1,750,728
-    ##    SOTOnTimeUnits SOTLateUnits SOTLate5daysUnits WTSOTLateUnits PPAUnits
-    ## 1          22,412        1,037               382          7,299       60
-    ## 2           1,698            0                 0              0       96
-    ## 3       3,818,057      662,758           376,733      8,305,811  341,633
-    ## 4         361,259      201,494           183,446      4,586,942  192,026
-    ## 5         229,654       22,042             1,425         81,519      726
-    ## 6          66,895        2,711               691         41,301      260
-    ## 7         476,706      143,336             7,675        515,227   19,508
-    ## 8         626,307      459,964           407,882     11,393,964  331,649
-    ## 9             681          174                 0            522        0
-    ## 10      1,732,839       17,889             6,003        129,962    3,813
-    ##    PPASOTLateUnits PPASOT5daysLateUnits WTPPASOTLateUnits
-    ## 1               48                   48               432
-    ## 2                0                    0                 0
-    ## 3          311,095              302,689         6,683,888
-    ## 4          158,376              155,011         4,118,468
-    ## 5              726                  726            13,068
-    ## 6                0                    0                 0
-    ## 7            8,469                7,675           110,626
-    ## 8          321,952              317,833         9,634,244
-    ## 9                0                    0                 0
-    ## 10           3,813                3,813            68,634
+    FALSE    ShipCancelMonth ReportingBrand                Category  SOTUnits
+    FALSE 1                7       GAP INTL                   Knits 3,137,461
+    FALSE 2               10   ON FRANCHISE                   Knits     5,136
+    FALSE 3                6         GAP NA                3P & Lic    50,565
+    FALSE 4                8        BRFS NA Denim and Woven Bottoms   463,314
+    FALSE 5                6          GO NA                  Wovens 1,195,065
+    FALSE 6               11          GO NA                   Knits 7,217,714
+    FALSE 7               10  GAP FRANCHISE                  Wovens    35,838
+    FALSE 8                1          ON NA             Accessories 6,635,810
+    FALSE 9               10        BRFS NA                  Wovens   458,666
+    FALSE 10               7       GAP INTL                Sweaters   885,924
+    FALSE    SOTOnTimeUnits SOTLateUnits SOTLate5daysUnits WTSOTLateUnits PPAUnits
+    FALSE 1       2,820,393      317,068           156,158      3,244,185   92,710
+    FALSE 2           5,136            0                 0              0      815
+    FALSE 3          19,241       31,323            26,417        656,400        0
+    FALSE 4         436,013       27,301            13,889        480,080   13,739
+    FALSE 5       1,086,330      108,734            80,992      1,967,396   69,656
+    FALSE 6       6,839,270      378,444           226,076      3,372,839   58,973
+    FALSE 7          32,015        3,823             3,313         71,932    2,091
+    FALSE 8       4,713,473    1,922,337         1,617,851     11,882,197      850
+    FALSE 9         376,787       81,878            66,144      1,434,003   30,839
+    FALSE 10        869,449       16,475            16,099        159,541   10,892
+    FALSE    PPASOTLateUnits PPASOT5daysLateUnits WTPPASOTLateUnits
+    FALSE 1           67,756               66,300         1,832,106
+    FALSE 2                0                    0                 0
+    FALSE 3                0                    0                 0
+    FALSE 4           13,739               13,739           429,639
+    FALSE 5           69,569               69,569         1,686,104
+    FALSE 6           48,440               48,440         1,200,128
+    FALSE 7            1,528                1,528            45,540
+    FALSE 8                0                    0                 0
+    FALSE 9           30,839               30,839         1,070,813
+    FALSE 10           7,995                7,619            95,292
 
 Lastly we need to output this file as a csv. The file will be output to the directory you set up using the Java file chooser earlier (deactivated for this notebook).
 
