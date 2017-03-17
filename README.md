@@ -1,7 +1,14 @@
 SOT/OTS Monthly Notebook
 ================
 
-This notebook documents the process for running the SOT/OTS monthly scripts in R. Preceding these scripts is a SQL procedure and the end output is a collection of .csv files. The following document will demonstrate the process for creating the Master tables and also the output of a single .csv file.
+-   [Set Output Directory](#set-output-directory)
+-   [Create Connection](#create-connection)
+-   [Create Master Tables](#create-master-tables)
+-   [House cleaning in preperation for Processing Masters](#house-cleaning-in-preperation-for-processing-masters)
+-   [Example of Output Tables](#example-of-output-tables)
+-   [Appendix](#appendix)
+
+This notebook documents the process for running the SOT/OTS monthly scripts in R. Preceding these scripts is a SQL procedure and the end output is a collection of .csv files. The following document will demonstrate the process for creating the Master tables and also the output of a single .csv file. \#\# Set up Environment
 
 First we need to load our libraries.
 
@@ -36,6 +43,9 @@ prompt_for_year <- function()
 }
 ```
 
+Set Output Directory
+--------------------
+
 The following code will open a system-independent, file chooser using Java and the function created above. It will allow you to choose the directory in which to save all files. This will sometimes fail the first time it is run. If it fails just rerun it (usually works the second time). Note: Eval is set to off to disable dynamic functionality for this notebook. This notebook will use the current working directory instead.
 
 ``` r
@@ -45,6 +55,9 @@ SOT_OTS_directory <- choose_file_directory()
 ``` r
 EOW <- prompt_for_week()
 ```
+
+Create Connection
+-----------------
 
 Next we need to create a connection to EDWP. Once you have stored your username and password as my\_uid and my\_pwd; and created a DSN, connect with a string similar to this (You may need to change the below if you gave your DSN an different name). Then verify that we have successfully connected by performing a query on the dbcinfo table.
 
@@ -61,6 +74,9 @@ sqlQuery(my_connect, query = "SELECT  * from dbc.dbcinfo;")
 
 We can see that the server has returned our table! We have connected!
 
+Create Master Tables
+--------------------
+
 Then we create our master tables via query and store them as R objects.
 
 ``` r
@@ -74,6 +90,9 @@ close(my_connect)
 ```
 
 For the purpose of this notebook, however, we will not query the database. Instead, we will load objects already created and stored on the corporate FTP server.
+
+House cleaning in preperation for Processing Masters
+----------------------------------------------------
 
 Now let's download a few static files from Github and save the master objects we just created. We will need these for static mapping.
 
@@ -155,6 +174,9 @@ SOT_Master <- SOT_Master %>%
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
          MetricShipDate <= SOT_Data_Pulled) 
 ```
+
+Example of Output Tables
+------------------------
 
 In the actual script *Master\_Import.R* there are many tables that are generated from the above Master tables. The following code is an example of one output that will illustrate the process for all. The remaining code will be reserved for the appendix of this document.
 
