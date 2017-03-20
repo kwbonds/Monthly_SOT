@@ -112,7 +112,7 @@ kable(gen_Brand_Dec, format = "html", table.attr='class="myTable"', format.args=
 
 ##### **Lateness by Brand and Parent Vendor:**
 
-To add some depth, we can look at the ***Lateness*** by brand and Category as well.  
+To add some depth, we can look at the ***Lateness*** by brand and Parent Vendor as well.  
 
 
 ```{r echo=FALSE}

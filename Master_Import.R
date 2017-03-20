@@ -1,6 +1,5 @@
 library(dplyr)
 library(readr)
-library(RSQLServer)
 library(RODBC)
 library(formattable)
 library(RJDBC)
