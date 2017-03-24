@@ -98,9 +98,9 @@ Now let's download a few static files from Github and save the master objects we
 
 ``` r
 # Import static files ----
-pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Preferred%20Vendor%20(new).csv")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Static_tables/Preferred%20Vendor%20(new).csv")
 Preferred_Vendor_new <- read_delim(file = pref_conn, delim = "^")
-pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Country%20Description.txt")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Static_tables/Country%20Description.txt")
 Country_description <- read_delim(file = pref_conn, delim = "^")
 ```
 
