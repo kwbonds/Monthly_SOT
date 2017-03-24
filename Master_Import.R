@@ -58,9 +58,9 @@ source("SOT_OTS_Custom_Functions.R")
 # Import static files ----
 # Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
 # Country_description <- read_delim(file= "Country Description.txt", delim = "^")
-pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Preferred%20Vendor%20(new).csv")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/Static_tables/master/Preferred%20Vendor%20(new).csv")
 Preferred_Vendor_new <- read_delim(file = pref_conn, delim = "^")
-pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Country%20Description.txt")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/Static_tables/master/Country%20Description.txt")
 Country_description <- read_delim(file = pref_conn, delim = "^")
 # save Master Objects ----
 save(SOT_Master, file = paste(SOT_OTS_directory,  'SOT_Master_object.rtf', sep = .Platform$file.sep))
