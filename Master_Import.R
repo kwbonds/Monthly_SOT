@@ -51,8 +51,8 @@ OTS_Master <- sqlQuery(my_connect,
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
 close(my_connect)
 # Alternatively load from Weekly SOT ----
-# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk48\\SOT_Master_object.rtf")
-# load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2016\\Wk48\\OTS_Master_object.rtf")
+#load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2017\\Weekly\\Wk 13\\SOT_Master_object.rtf")
+#load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2017\\Weekly\\Wk 13\\OTS_Master_object.rtf")
 
 source("SOT_OTS_Custom_Functions.R")
 # Import static files ----
@@ -359,13 +359,13 @@ Monthly_GapInc_Combine <- Monthly_GapInc_Combine[c(1:6, 11:15,7:8,16,9:10)]
 Preferred_Vendor_New_Combine <- left_join(Monthly_Preferred_Vendor_new, Monthly_Preferred_Vendor_New_OTS, by = c("Category"="Category", "Parent_Vendor"="Parent_Vendor", "ShipCancelMonth" = "Month_Number"))
 Preferred_Vendor_New_Combine <-Preferred_Vendor_New_Combine[c(1:8, 13:17, 9:10, 18, 11:12)]
 
-# Create Monthly - byDC
+# Create Monthly - byDC ----
 Monthly_by_DC <- OTS_Master %>% 
   filter(OTS_Master$Week <= EOW) %>%
   group_by(Fiscal_Month, Month_Number, DCCampus, DC_NAME, DestCtryCD) %>% 
   summarise("Total Units" = floor(sum(Units)),
             "OnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
-            "OTS%" = sum(Units[Lateness=="OnTime"])/sum(Units),
+            "OTS%" = sum(Units[Lateness=="OnTime"])/sum(Units[(Lateness=="OnTime" | Lateness == "Late")]),
             "OTSLate5daysUnits" = floor(sum(Units[Lateness=="Late" & Days_Late > 5])),
             "WTOTSLateUnits" = floor(sum(Units[Lateness=="Late"]*Days_Late[Lateness=="Late" & Days_Late >=1])),
             "LateUnits"= floor(sum(Units[Lateness=="Late"]))) %>% 
