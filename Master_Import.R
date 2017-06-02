@@ -51,15 +51,18 @@ OTS_Master <- sqlQuery(my_connect,
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
 close(my_connect)
 # Alternatively load from Weekly SOT ----
-#load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2017\\Weekly\\Wk 13\\SOT_Master_object.rtf")
-#load("C:\\Users\\Ke2l8b1\\Documents\\SOT Weekly\\2017\\Weekly\\Wk 13\\OTS_Master_object.rtf")
+load(paste(choose_file_directory(), "SOT_Master_object.rtf", sep = .Platform$file.sep))
+load(paste(choose_file_directory(), "OTS_Master_object.rtf", sep = .Platform$file.sep))
 
-source("SOT_OTS_Custom_Functions.R")
+# source("SOT_OTS_Custom_Functions.R")
 # Import static files ----
 # Preferred_Vendor_new <- read_delim(file = "Preferred Vendor (new).csv", delim = "^")
 # Country_description <- read_delim(file= "Country Description.txt", delim = "^")
-pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/Static_tables/master/Preferred%20Vendor%20(new).csv")
-Preferred_Vendor_new <- read_delim(file = pref_conn, delim = "^")
+pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/master/Static_tables/Preferred%20Vendor%20(new).csv")
+
+#Update Preferred_Vendor_new from Vendor concentration script 
+# Preferred_Vendor_new <- read_delim(file = pref_conn, delim = "^")
+Preferred_Vendor_new <- read_csv(file = pref_conn)
 pref_conn <- getURL("https://raw.githubusercontent.com/GSCAT/Monthly_SOT/Static_tables/master/Country%20Description.txt")
 Country_description <- read_delim(file = pref_conn, delim = "^")
 # save Master Objects ----
@@ -359,6 +362,7 @@ Monthly_GapInc_Combine <- Monthly_GapInc_Combine[c(1:6, 11:15,7:8,16,9:10)]
 Preferred_Vendor_New_Combine <- left_join(Monthly_Preferred_Vendor_new, Monthly_Preferred_Vendor_New_OTS, by = c("Category"="Category", "Parent_Vendor"="Parent_Vendor", "ShipCancelMonth" = "Month_Number"))
 Preferred_Vendor_New_Combine <-Preferred_Vendor_New_Combine[c(1:8, 13:17, 9:10, 18, 11:12)]
 
+
 # Create Monthly - byDC ----
 Monthly_by_DC <- OTS_Master %>% 
   filter(OTS_Master$Week <= EOW) %>%
@@ -557,7 +561,7 @@ write_csv(Monthly_Brand_Category_Combine, path = paste(SOT_OTS_directory,  paste
 write_csv(Monthly_Brand_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Brand_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Category_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Category_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_GapInc_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_GapInc_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
-write_csv(Preferred_Vendor_New_Combine, path = paste(SOT_OTS_directory,  paste('Preferred_Vendor_New_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ))
+write_csv(Preferred_Vendor_New_Combine, path = paste(SOT_OTS_directory,  paste('Preferred_Vendor_New_Combine_WE_', EOW, '.csv',sep = ""), sep = '/' ), na = "0")
 write_csv(Monthly_by_DC, path = paste(SOT_OTS_directory,  paste('Monthly_by_DC_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Top_20_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Top_20_Countries_WE_', EOW, '.csv',sep = ""), sep = '/' ))
 write_csv(Monthly_Top_50_Vendors_Combine, path = paste(SOT_OTS_directory,  paste('Monthly_Top_50_Vendors_WE_', EOW, '.csv',sep = ""), sep = '/' ))
