@@ -8,7 +8,7 @@ BMC_table <- fread("https://github.gapinc.com/raw/SRAA/Static_tables/master/BMC.
 
 NA_EU_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "CFC", "OCC", "OFC", "PUC", "WFC")
 global_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "CFC", "OFC", "WFC", "PUC", "SHD", "TFC", "HK DC", "JPD", "EAO", "EFC")
-log_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "CFC", "OCC", "OFC", "PUC", "WFC", "Total DC's (NA+EU)", "")
+# log_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "CFC", "OCC", "OFC", "PUC", "WFC", "Total DC's (NA+EU)", "")
 
 
 
@@ -146,10 +146,12 @@ head(Monthly_by_Brand_Log, n = 20)
 OTS_Master2 <- OTS_Master
 levels(OTS_Master2$ReportingBrand) <- list("Banana Republic" = c("BR NA", "BR INTL"), 
                                             "Gap" = c("GAP INTL", "GAP NA"), 
-                                            "OLD Navy" = c("ON NA", "ON INTL"), 
+                                            "Old Navy" = c("ON NA", "ON INTL"), 
                                             "BRFS" = c("BRFS NA"), 
                                             "GFO" = c("GO NA", "GO INTL"), 
                                             "Athleta" = "ATHLETA" )
+
+log_brand_vec <- c("Banana Republic", "Gap", "Old Navy", "BRFS", "GFO")
 
 # Create Monthly - byBrand ----
 by_Brand_Log <- OTS_Master2 %>% 
@@ -161,6 +163,7 @@ by_Brand_Log <- OTS_Master2 %>%
           "Entity" = ReportingBrand,
           Month_Number,
           `OTS%`) %>% 
+  right_join(as.data.table(log_brand_vec), by = c("Entity" = "log_brand_vec")) %>% 
   droplevels()
 
 # Create Monthly - byBrand ----
@@ -177,6 +180,7 @@ by_Brand_Log_YTD <- OTS_Master2 %>%
     Entity,
     Month_Number,
     `YTD OTS%`) %>%
+  right_join(as.data.table(log_brand_vec), by = c("Entity" = "log_brand_vec")) %>% 
   droplevels()
 
 
