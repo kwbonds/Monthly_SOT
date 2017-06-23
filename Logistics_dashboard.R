@@ -150,6 +150,7 @@ levels(OTS_Master2$ReportingBrand) <- list("Banana Republic" = c("BR NA", "BR IN
                                             "BRFS" = c("BRFS NA"), 
                                             "GFO" = c("GO NA", "GO INTL"), 
                                             "Athleta" = "ATHLETA" )
+levels(OTS_Master2$DestCtryCD) <- list("Canada" = "CA")
 
 log_brand_vec <- c("Banana Republic", "Gap", "Old Navy", "BRFS", "GFO")
 
@@ -190,7 +191,47 @@ log_All_bind <- rbind(as.data.frame(NA_EU_join), as.data.frame(log_NA_EU_DC_tota
 
 write_csv(log_All_bind, "Log_All_bind.csv")
 
-# Create Monthly - DestCtry ----
+## Create Market tables ----
+market_vec_log <- c("US", "CA", "GB", "JP", "CN", "HK")
+
+# Market ----
+by_Market_Log <- OTS_Master2 %>% 
+  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
+  filter(Month_Number == fis_month) %>%
+  group_by(DestCtryCD) %>% 
+  summarise("OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>%  
+  select(
+    "Entity" = DestCtryCD,
+    `OTS%`) %>%
+  mutate("Month_Number" = fis_month) %>% 
+  select(
+    Entity,
+    Month_Number,
+    `OTS%`) %>%
+  right_join(as.data.table(market_vec_log), by = c("Entity" = "market_vec_log")) %>% 
+  droplevels()
+
+# Market YTD ----
+by_Market_Log_YTD <- OTS_Master2 %>% 
+  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
+  filter(Month_Number <= fis_month) %>%
+  group_by(DestCtryCD) %>% 
+  summarise("YTD OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>%  
+  select(
+    "Entity" = DestCtryCD,
+    `YTD OTS%`) %>%
+  mutate("Month_Number" = fis_month) %>% 
+  select(
+    Entity,
+    Month_Number,
+    `YTD OTS%`) %>%
+  right_join(as.data.table(market_vec_log), by = c("Entity" = "market_vec_log")) %>% 
+  droplevels()
+
+log_market_join <- right_join(by_Market_Log, by_Market_Log_YTD, by = c("Entity", "Month_Number"))
+
+##### ADHOC for Market
+# Create Monthly - ----
 Monthly_by_DC_Log <- OTS_Master %>%
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
   filter(Week <= EOW) %>%
@@ -210,6 +251,7 @@ Monthly_by_DC_Log <- OTS_Master %>%
           `OnTimeUnits`, 
           `LateUnits`) %>% 
   droplevels()
+
 
 write_csv(Monthly_by_DC_Log, "Monthly_by_DC_log.csv")
 # 
