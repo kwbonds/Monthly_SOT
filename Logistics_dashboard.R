@@ -138,6 +138,7 @@ NA_EU_join <- right_join(log_NA_EU_DC, log_NA_EU_DC_YTD, by = c("Entity", "Month
 
 #log_Total_DC_join <- right_join(log_Total_DC, log_Total_DC_YTD, by = c("Entity", "Month_Number"))
 log_Total_DC_bind <- cbind(log_Total_DC[1, ], log_Total_DC_YTD[1,3])
+log_Total_DC_bind[1,1] <- "Global"
 
 
 
@@ -187,9 +188,6 @@ by_Brand_Log_YTD <- OTS_Master2 %>%
 
 log_brand_join <- right_join(by_Brand_Log, by_Brand_Log_YTD, by = c("Entity", "Month_Number"))
 
-log_All_bind <- rbind(as.data.frame(NA_EU_join), as.data.frame(log_NA_EU_DC_total_bind), as.data.frame(log_brand_join), as.data.frame(log_Total_DC_bind))
-
-write_csv(log_All_bind, "Log_All_bind.csv")
 
 ## Create Market tables ----
 market_vec_log <- c("US", "CA", "GB", "JP", "CN", "HK")
@@ -229,6 +227,10 @@ by_Market_Log_YTD <- OTS_Master2 %>%
   droplevels()
 
 log_market_join <- right_join(by_Market_Log, by_Market_Log_YTD, by = c("Entity", "Month_Number"))
+
+log_All_bind <- rbind(as.data.frame(NA_EU_join), as.data.frame(log_NA_EU_DC_total_bind), as.data.frame(log_brand_join), as.data.frame(log_market_join), as.data.frame(log_Total_DC_bind))
+
+write_csv(log_All_bind, "Log_All_bind.csv")
 
 ##### ADHOC for Market
 # Create Monthly - ----
