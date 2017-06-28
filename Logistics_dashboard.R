@@ -153,6 +153,7 @@ levels(OTS_Master2$ReportingBrand) <- list("Banana Republic" = c("BR NA", "BR IN
                                             "Athleta" = "ATHLETA" )
 levels(OTS_Master2$DestCtryCD) <- list("Canada" = "CA")
 
+
 log_brand_vec <- c("Banana Republic", "Gap", "Old Navy", "BRFS", "GFO")
 
 # Create Monthly - byBrand ----
@@ -193,11 +194,14 @@ log_brand_join <- right_join(by_Brand_Log, by_Brand_Log_YTD, by = c("Entity", "M
 market_vec_log <- c("US", "CA", "GB", "JP", "CN", "HK")
 
 # Market ----
-by_Market_Log <- OTS_Master2 %>% 
+by_Market_Log <- OTS_Master %>% 
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
   filter(Month_Number == fis_month) %>%
-  group_by(DestCtryCD) %>% 
-  summarise("OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>%  
+  group_by(DestCtryCD) %>%
+  summarise("OnTime Units" = sum(Units[Lateness=="OnTime"], na.rm = TRUE),
+    "OTS Units" = sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE),   
+            "OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>% 
+  # summarise("OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>%  
   select(
     "Entity" = DestCtryCD,
     `OTS%`) %>%
@@ -210,11 +214,12 @@ by_Market_Log <- OTS_Master2 %>%
   droplevels()
 
 # Market YTD ----
-by_Market_Log_YTD <- OTS_Master2 %>% 
+by_Market_Log_YTD <- OTS_Master %>% 
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
-  filter(Month_Number <= fis_month) %>%
+  #filter(Month_Number <= fis_month) %>%
   group_by(DestCtryCD) %>% 
-  summarise("YTD OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>%  
+  summarise("YTD Units" = sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE),   
+            "YTD OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>% 
   select(
     "Entity" = DestCtryCD,
     `YTD OTS%`) %>%
