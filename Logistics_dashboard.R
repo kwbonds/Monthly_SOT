@@ -1,6 +1,7 @@
 library(xlsx)
 library(data.table)
 library(scales)
+library(magrittr)
 
 
 my_directory <- choose_file_directory()
@@ -10,7 +11,7 @@ NA_EU_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "C
 global_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "CFC", "OFC", "WFC", "PUC", "SHD", "TFC", "HK DC", "JPD", "EAO", "EFC")
 # log_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "CFC", "OCC", "OFC", "PUC", "WFC", "Total DC's (NA+EU)", "")
 
-
+# fis_month = 4
 
 # Create NA/EU DC ----
 log_NA_EU_DC <- OTS_Master %>%
@@ -142,7 +143,7 @@ log_Total_DC_bind[1,1] <- "Global"
 
 
 
-head(Monthly_by_Brand_Log, n = 20)
+# head(Monthly_by_Brand_Log, n = 20)
 #### BRAND ----
 OTS_Master2 <- OTS_Master
 levels(OTS_Master2$ReportingBrand) <- list("Banana Republic" = c("BR NA", "BR INTL"), 
@@ -193,17 +194,33 @@ log_brand_join <- right_join(by_Brand_Log, by_Brand_Log_YTD, by = c("Entity", "M
 ## Create Market tables ----
 market_vec_log <- c("US", "CA", "GB", "JP", "CN", "HK")
 
+OTS_Master3 <- OTS_Master
+
+OTS_Master3 <- OTS_Master3 %>% 
+  mutate("custom_country" = case_when(DC_NAME %in% c("FDC", "ODC", "PDC", "SCD", "TDC", "OCC", "OFC", "WFC", "PUC", "NDC", "EAO") ~ "US",
+                                    DC_NAME %in% c("BDC", "CFC") ~ "CA",
+                                    DC_NAME %in% c("GUK") ~ "GB",
+                                    DC_NAME %in% c ("JPD") ~ "JP",
+                                    DC_NAME %in% c("SHD") ~ "CN",
+                                    DC_NAME %in% c("HK DC") ~ "HK"))
+
+check_customCC <- OTS_Master3 %>% 
+  group_by(DC_NAME, custom_country) %>% 
+  summarise(n()) %>% 
+  arrange(custom_country) %T>% 
+  write_csv("check.csv")
+
 # Market ----
-by_Market_Log <- OTS_Master %>% 
+by_Market_Log <- OTS_Master3 %>% 
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
   filter(Month_Number == fis_month) %>%
-  group_by(DestCtryCD) %>%
+  group_by(custom_country) %>%
   summarise("OnTime Units" = sum(Units[Lateness=="OnTime"], na.rm = TRUE),
     "OTS Units" = sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE),   
             "OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>% 
   # summarise("OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>%  
   select(
-    "Entity" = DestCtryCD,
+    "Entity" = custom_country,
     `OTS%`) %>%
   mutate("Month_Number" = fis_month) %>% 
   select(
@@ -214,14 +231,14 @@ by_Market_Log <- OTS_Master %>%
   droplevels()
 
 # Market YTD ----
-by_Market_Log_YTD <- OTS_Master %>% 
+by_Market_Log_YTD <- OTS_Master3 %>% 
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
   #filter(Month_Number <= fis_month) %>%
-  group_by(DestCtryCD) %>% 
+  group_by(custom_country) %>% 
   summarise("YTD Units" = sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE),   
             "YTD OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>% 
   select(
-    "Entity" = DestCtryCD,
+    "Entity" = custom_country,
     `YTD OTS%`) %>%
   mutate("Month_Number" = fis_month) %>% 
   select(
@@ -235,7 +252,7 @@ log_market_join <- right_join(by_Market_Log, by_Market_Log_YTD, by = c("Entity",
 
 log_All_bind <- rbind(as.data.frame(NA_EU_join), as.data.frame(log_NA_EU_DC_total_bind), as.data.frame(log_brand_join), as.data.frame(log_market_join), as.data.frame(log_Total_DC_bind))
 
-write_csv(log_All_bind, "Log_All_bind.csv")
+write_csv(log_All_bind, "Log_All_bind_May.csv")
 
 ##### ADHOC for Market
 # Create Monthly - ----
