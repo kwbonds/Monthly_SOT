@@ -88,6 +88,7 @@ OTS_Master <- OTS_Master %>%
          !grepl("dummy", Parent_Vendor, ignore.case = TRUE),
          !grepl("JPF", DC_NAME, ignore.case = TRUE)) 
 
+SOT_Data_Pulled <- SOT_Master$Data_Pulled[1]
 SOT_Master <- SOT_Master %>% 
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
   filter(ShipCancelWeek <= EOW,
@@ -552,8 +553,8 @@ Category_Top_Ten_Delay <-  SOT_Master %>%
    group_by(Category, ShipCancelMonth, Parent_Vendor) %>% 
    summarise("SOTUnits" = floor(sum(Units)),
              "AdjustedSOTUnits"= floor(sum(Units[Lateness=="OnTime"]) + sum(Units[Lateness=="Late"])),
-             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
-             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
+             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"], na.rm = T)),
+             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"], na.rm = T)),
              "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
              "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
              "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
