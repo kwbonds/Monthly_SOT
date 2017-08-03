@@ -51,8 +51,9 @@ OTS_Master <- sqlQuery(my_connect,
                        query = "SELECT  * from SRAA_SAND.VIEW_OTS_MASTER;")
 close(my_connect)
 # Alternatively load from Weekly SOT ----
-load(paste(choose_file_directory(), "SOT_Master_object.rtf", sep = .Platform$file.sep))
-load(paste(choose_file_directory(), "OTS_Master_object.rtf", sep = .Platform$file.sep))
+
+load(paste(choose_file_directory(), "Monthly_objects", "SOT_Master_object.rtf", sep = .Platform$file.sep))
+load(paste(choose_file_directory(), "Monthly_objects", "OTS_Master_object.rtf", sep = .Platform$file.sep))
 
 # source("SOT_OTS_Custom_Functions.R")
 # Import static files ----
@@ -217,7 +218,7 @@ Monthly_GapInc_SOT <- SOT_Master %>%
 
 # Create Monthly OTS Brand and Category Table ----
 Monthly_Brand_Category_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= EOW) %>%
+  filter(Week <= EOW) %>%
   group_by(Month_Number, ReportingBrand, Category) %>% 
   summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -240,7 +241,7 @@ Monthly_Brand_Category_OTS <- OTS_Master %>%
 
 # Create Monthly OTS Brand Table ----
 Monthly_Brand_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= EOW) %>%
+  filter(Week <= EOW) %>%
   group_by(Month_Number, ReportingBrand) %>% 
   summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -262,7 +263,7 @@ Monthly_Brand_OTS <- OTS_Master %>%
 
 # Create Monthly OTS Category Table ----
 Monthly_Category_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= EOW) %>%
+  filter(Week <= EOW) %>%
   group_by(Month_Number, Category) %>% 
   summarise("OTSUnits" = floor(sum(Units)),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -284,7 +285,7 @@ Monthly_Category_OTS <- OTS_Master %>%
 
 # Create Monthly Gap Inc OTS Table ----
 Monthly_GapInc_OTS <- OTS_Master %>%
-  filter(OTS_Master$Week <= EOW) %>%
+  filter(Week <= EOW) %>%
   group_by(Month_Number) %>% 
   summarise("OTSUnits" = sum(Units),
             "OTSOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -379,7 +380,7 @@ Preferred_Vendor_New_Combine <-Preferred_Vendor_New_Combine[c(1:8, 13:17, 9:10, 
 
 # Create Monthly - byDC ----
 Monthly_by_DC <- OTS_Master %>% 
-  filter(OTS_Master$Week <= EOW) %>%
+  filter(Week <= EOW) %>%
   group_by(Fiscal_Month, Month_Number, DCCampus, DC_NAME, DestCtryCD) %>% 
   summarise("Total Units" = floor(sum(Units)),
             "OnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
@@ -525,15 +526,15 @@ Brand_Top_Ten_Delay <-  SOT_Master %>%
    filter(ShipCancelWeek <= EOW) %>%
    group_by(ReportingBrand, ShipCancelMonth, Parent_Vendor) %>% 
    summarise("SOTUnits" = floor(sum(Units)),
-             "AdjustedSOTUnits"= floor(sum(Units[Lateness=="OnTime"]) + sum(Units[Lateness=="Late"])),
-             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"])),
-             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"])),
+             "AdjustedSOTUnits"= floor(sum(Units[Lateness=="OnTime"], na.rm = T) + sum(Units[Lateness=="Late"], na.rm = T)),
+             "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"], na.rm = T)),
+             "SOTLateUnits"= floor(sum(Units[Lateness=="Late"], na.rm = T)),
              "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
-             "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
-             "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
-             "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
-             "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
-             "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
+             "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1], na.rm = T)),
+             "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"], na.rm = T)),
+             "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"], na.rm = T)), 
+             "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5], na.rm = T)),
+             "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1], na.rm = T))) %>%  
    select(
           ReportingBrand,
           ShipCancelMonth,
@@ -552,15 +553,15 @@ Category_Top_Ten_Delay <-  SOT_Master %>%
    filter(ShipCancelWeek <= EOW) %>%
    group_by(Category, ShipCancelMonth, Parent_Vendor) %>% 
    summarise("SOTUnits" = floor(sum(Units)),
-             "AdjustedSOTUnits"= floor(sum(Units[Lateness=="OnTime"]) + sum(Units[Lateness=="Late"])),
+             "AdjustedSOTUnits"= floor(sum(Units[Lateness=="OnTime"], na.rm = T) + sum(Units[Lateness=="Late"], na.rm = T)),
              "SOTOnTimeUnits" = floor(sum(Units[Lateness=="OnTime"], na.rm = T)),
              "SOTLateUnits"= floor(sum(Units[Lateness=="Late"], na.rm = T)),
-             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5])), 
-             "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1])),
-             "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"])),
-             "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"])), 
-             "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5])),
-             "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1]))) %>%  
+             "SOTLate5daysUnits" = floor(sum(Units[Lateness=="Late" & DAYS_LATE > 5], na.rm = T)), 
+             "WTSOTLateUnits" = floor(sum(Units[Lateness=="Late"]*DAYS_LATE[Lateness=="Late" & DAYS_LATE >=1], na.rm = T)),
+             "PPAUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir"], na.rm = T)),
+             "PPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"], na.rm = T)), 
+             "PPASOT5daysLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE>5], na.rm = T)),
+             "WTPPASOTLateUnits" = floor(sum(Units[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late"]*DAYS_LATE[SHP_MODE_CATG_NM == "PrepaidAir" & Lateness=="Late" & DAYS_LATE >=1], na.rm = T))) %>%  
    select(
           Category,
           ShipCancelMonth,
