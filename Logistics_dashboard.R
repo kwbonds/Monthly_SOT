@@ -1,7 +1,9 @@
+library(dplyr)
 library(xlsx)
 library(data.table)
 library(scales)
 library(magrittr)
+library(readr)
 
 
 my_directory <- choose_file_directory()
@@ -16,9 +18,12 @@ global_vec <- c("BDC", "FDC", "NDC", "ODC", "PDC", "SCD", "SDC", "TDC", "GUK", "
 # Create NA/EU DC ----
 log_NA_EU_DC <- OTS_Master %>%
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
+  filter(!grepl("PIPERLIME", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
   filter(Month_Number == fis_month) %>%
   group_by( Month_Number, DC_NAME) %>% 
-  summarise("OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], na.rm = TRUE))) %>% 
+  summarise("OTS%" = scales::percent(sum(Units[Lateness=="OnTime"], 
+                                         na.rm = TRUE)/sum(Units[(Lateness=="OnTime" | Lateness == "Late")], 
+                                                           na.rm = TRUE))) %>% 
   select(
     "Entity" = DC_NAME,
           Month_Number,
@@ -33,7 +38,8 @@ log_NA_EU_DC <- OTS_Master %>%
 
 # Create NA/EU DC ----
 log_NA_EU_DC_YTD <- OTS_Master %>%
-  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
+  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
+  filter(!grepl("PIPERLIME", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
   filter(Month_Number <= fis_month) %>%
   group_by(DC_NAME) %>% 
   summarise("YTD OTS%" = percent(sum(Units[Lateness=="OnTime"], 
@@ -53,7 +59,8 @@ log_NA_EU_DC_YTD <- OTS_Master %>%
 
 # Create NA/EU DC Total----
 log_NA_EU_DC_total <- OTS_Master %>%
-  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
+  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
+  filter(!grepl("PIPERLIME", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
 #  filter(Month_Number != NA) %>% 
   filter(Month_Number == fis_month) %>%
   right_join(as.data.table(NA_EU_vec), by = c("DC_NAME" = "NA_EU_vec")) %>% 
@@ -73,7 +80,8 @@ log_NA_EU_DC_total <- OTS_Master %>%
 
 # Create NA/EU DC YTD Total----
 log_NA_EU_DC_YTD_total <- OTS_Master %>%
-  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
+  filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>%
+  filter(!grepl("PIPERLIME", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
   filter(Month_Number <= fis_month) %>%
   right_join(as.data.table(NA_EU_vec), by = c("DC_NAME" = "NA_EU_vec")) %>% 
   group_by(Data_Pulled) %>% 
@@ -99,6 +107,7 @@ log_NA_EU_DC_total_bind[1,1] <- "Total DC's (NA+EU)"
 # Create Total DC ----
 log_Total_DC <- OTS_Master %>%
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
+  filter(!grepl("PIPERLIME", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
   filter(Month_Number == fis_month) %>%
   right_join(as.data.frame(global_vec), by = c("DC_NAME" = "global_vec")) %>% 
   group_by( Data_Pulled) %>% 
@@ -116,6 +125,7 @@ log_Total_DC <- OTS_Master %>%
 # Create Total DC ----
 log_Total_DC_YTD <- OTS_Master %>%
   filter(!grepl("FRANCHISE", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
+  filter(!grepl("PIPERLIME", ReportingBrand, ignore.case = TRUE, fixed=FALSE)) %>% 
   filter(Month_Number <= fis_month) %>%
   right_join(as.data.frame(global_vec), by = c("DC_NAME" = "global_vec")) %>% 
   #group_by(DC_NAME) %>% 
@@ -250,9 +260,13 @@ by_Market_Log_YTD <- OTS_Master3 %>%
 
 log_market_join <- right_join(by_Market_Log, by_Market_Log_YTD, by = c("Entity", "Month_Number"))
 
-log_All_bind <- rbind(as.data.frame(NA_EU_join), as.data.frame(log_NA_EU_DC_total_bind), as.data.frame(log_brand_join), as.data.frame(log_market_join), as.data.frame(log_Total_DC_bind))
+log_All_bind <- rbind(as.data.frame(NA_EU_join), 
+                      as.data.frame(log_NA_EU_DC_total_bind), 
+                      as.data.frame(log_brand_join), 
+                      as.data.frame(log_market_join), 
+                      as.data.frame(log_Total_DC_bind))
 
-write_csv(log_All_bind, "Log_All_bind_May.csv")
+write_csv(log_All_bind, "Log_All_bind_July.csv")
 
 ##### ADHOC for Market
 # Create Monthly - ----
